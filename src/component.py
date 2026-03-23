@@ -24,7 +24,7 @@ class Component(ComponentBase):
         self.params = Configuration(**self.configuration.parameters)
 
     def run(self):
-        raw_rows = self.configuration.config_data.get("config_rows", [])
+        raw_rows = self.configuration.config_rows
         if not raw_rows:
             raise UserException("No configuration rows defined. Add at least one extraction row.")
 
@@ -62,7 +62,7 @@ class Component(ComponentBase):
     def list_databases(self) -> list[SelectElement] | ValidationResult:
         """Return databases for a given application. Requires 'application' in the config row parameters."""
         # application may come from the current row being edited (sent in config_data)
-        rows = self.configuration.config_data.get("config_rows", [])
+        rows = self.configuration.config_rows
         application = ""
         if rows:
             application = rows[0].get("parameters", {}).get("application", "")
