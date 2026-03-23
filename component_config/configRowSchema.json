@@ -15,14 +15,31 @@
       "type": "string",
       "title": "Application",
       "description": "Essbase application name or Planning application name",
-      "propertyOrder": 2
+      "format": "select",
+      "enum": [],
+      "propertyOrder": 2,
+      "options": {
+        "tags": true,
+        "async": {
+          "label": "Load Applications",
+          "action": "listApplications",
+          "autoload": true
+        }
+      }
     },
     "database": {
       "type": "string",
       "title": "Database / Cube",
       "description": "Essbase database (cube) name. Required for Essbase module.",
+      "format": "select",
+      "enum": [],
       "propertyOrder": 3,
       "options": {
+        "tags": true,
+        "async": {
+          "label": "Load Databases",
+          "action": "listDatabases"
+        },
         "dependencies": {
           "module": "essbase"
         }
