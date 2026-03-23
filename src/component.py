@@ -9,8 +9,9 @@ Phase 1 MVP:
 import csv
 import logging
 
-from keboola.component.base import ComponentBase
+from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
+from keboola.component.sync_actions import MessageType, SelectElement, ValidationResult
 
 from configuration import Configuration, RowConfiguration
 from essbase_client import EssbaseClient, mdx_response_to_rows
@@ -47,6 +48,35 @@ class Component(ComponentBase):
                 if planning_client is None:
                     planning_client = self._build_planning_client(params)
                 self._extract_planning(planning_client, row_params)
+
+    @sync_action("listApplications")
+    def list_applications(self) -> list[SelectElement]:
+        """Return all Essbase applications for UI dropdown."""
+        params = Configuration(**self.configuration.parameters)
+        client = self._build_essbase_client(params)
+        apps = client.get_applications()
+        return [SelectElement(value=app["name"], label=app.get("alias") or app["name"]) for app in apps]
+
+    @sync_action("listDatabases")
+    def list_databases(self) -> list[SelectElement] | ValidationResult:
+        """Return databases for a given application. Requires 'application' in the config row parameters."""
+        params = Configuration(**self.configuration.parameters)
+
+        # application may come from the current row being edited (sent in config_data)
+        rows = self.configuration.config_data.get("config_rows", [])
+        application = ""
+        if rows:
+            application = rows[0].get("parameters", {}).get("application", "")
+
+        if not application:
+            return ValidationResult(
+                "Select or enter an Application name first, then reload databases.",
+                MessageType.WARNING,
+            )
+
+        client = self._build_essbase_client(params)
+        databases = client.get_databases(application)
+        return [SelectElement(value=db["name"], label=db.get("alias") or db["name"]) for db in databases]
 
     def _build_essbase_client(self, params: Configuration) -> EssbaseClient:
         host = params.get_essbase_host()

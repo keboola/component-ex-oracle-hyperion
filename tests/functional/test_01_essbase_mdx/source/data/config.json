@@ -1,0 +1,24 @@
+{
+  "parameters": {
+    "hyperion_url": "http://hyperion-test:9000",
+    "username": "admin",
+    "#password": "testpass",
+    "essbase_host": "hyperion-test",
+    "essbase_port": 9010,
+    "ssl_verify": false,
+    "debug": false
+  },
+  "config_rows": [
+    {
+      "id": "sample-basic-q1",
+      "is_disabled": false,
+      "parameters": {
+        "module": "essbase",
+        "application": "Sample",
+        "database": "Basic",
+        "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola],[Root Beer]} ON ROWS FROM [Sample.Basic]",
+        "output_table": "essbase_sample_basic_q1"
+      }
+    }
+  ]
+}
