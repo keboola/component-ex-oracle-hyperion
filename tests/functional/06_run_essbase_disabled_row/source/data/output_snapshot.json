@@ -1,0 +1,24 @@
+{
+  "files": {},
+  "hash_algorithm": "sha256",
+  "tables": {
+    "essbase_q2.csv": {
+      "columns": [
+        "Product",
+        "Apr",
+        "May",
+        "Jun"
+      ],
+      "hash": "sha256:e418f68dc08e53075fb9d2fb7602c67e1c48e7b76b4872dfab7f4499ec02787a",
+      "row_count": 2,
+      "size_bytes": 50
+    },
+    "essbase_q2.csv.manifest": {
+      "columns": null,
+      "hash": "sha256:7a11e3d6cf321073a89c589a23080dd39020efee57b2936ff58ed1049cbd7ffb",
+      "row_count": null,
+      "size_bytes": 141
+    }
+  },
+  "version": "1.0"
+}

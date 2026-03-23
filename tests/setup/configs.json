@@ -1,0 +1,160 @@
+[
+  {
+    "name": "01_listApplications",
+    "description": "List all Essbase applications via sync action",
+    "config": {
+      "action": "listApplications",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false
+      }
+    }
+  },
+  {
+    "name": "02_listDatabases_no_app",
+    "description": "listDatabases without application set — expects a WARNING validation result",
+    "config": {
+      "action": "listDatabases",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false
+      }
+    }
+  },
+  {
+    "name": "03_listDatabases_with_app",
+    "description": "listDatabases for Sample application — returns Basic cube",
+    "config": {
+      "action": "listDatabases",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false
+      },
+      "config_rows": [
+        {
+          "parameters": {
+            "application": "Sample"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "04_run_essbase_mdx_basic",
+    "description": "Extract Q1 data from Sample.Basic via MDX",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false
+      },
+      "config_rows": [
+        {
+          "id": "essbase-basic-q1",
+          "is_disabled": false,
+          "parameters": {
+            "module": "essbase",
+            "application": "Sample",
+            "database": "Basic",
+            "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola],[Root Beer]} ON ROWS FROM [Sample.Basic]",
+            "output_table": "essbase_sample_basic"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "05_run_essbase_mdx_multiple_rows",
+    "description": "Extract from Sample.Basic with two config rows",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false
+      },
+      "config_rows": [
+        {
+          "id": "row-cola",
+          "is_disabled": false,
+          "parameters": {
+            "module": "essbase",
+            "application": "Sample",
+            "database": "Basic",
+            "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
+            "output_table": "essbase_cola"
+          }
+        },
+        {
+          "id": "row-root-beer",
+          "is_disabled": false,
+          "parameters": {
+            "module": "essbase",
+            "application": "Sample",
+            "database": "Basic",
+            "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Root Beer]} ON ROWS FROM [Sample.Basic]",
+            "output_table": "essbase_root_beer"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "06_run_essbase_disabled_row",
+    "description": "Run with one disabled and one active row — disabled must be skipped",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false
+      },
+      "config_rows": [
+        {
+          "id": "disabled-row",
+          "is_disabled": true,
+          "parameters": {
+            "module": "essbase",
+            "application": "Sample",
+            "database": "Basic",
+            "mdx_query": "SELECT {[Jan]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
+            "output_table": "should_not_appear"
+          }
+        },
+        {
+          "id": "active-row",
+          "is_disabled": false,
+          "parameters": {
+            "module": "essbase",
+            "application": "Sample",
+            "database": "Basic",
+            "mdx_query": "SELECT {[Apr],[May],[Jun]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
+            "output_table": "essbase_q2"
+          }
+        }
+      ]
+    }
+  }
+]

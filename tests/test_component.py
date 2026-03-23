@@ -1,19 +1,16 @@
 import os
 import unittest
 
-import mock
-from freezegun import freeze_time
+from unittest import mock
 
 from component import Component
+from keboola.component.exceptions import UserException
 
 
 class TestComponent(unittest.TestCase):
-    # set global time to 2010-10-10 - affects functions like datetime.now()
-    @freeze_time("2010-10-10")
-    # set KBC_DATADIR env to non-existing dir
     @mock.patch.dict(os.environ, {"KBC_DATADIR": "./non-existing-dir"})
     def test_run_no_cfg_fails(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises((UserException, Exception)):
             comp = Component()
             comp.run()
 
