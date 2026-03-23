@@ -1,1 +1,56 @@
-{}
+{
+  "type": "object",
+  "title": "Extraction Row",
+  "required": ["module", "application", "output_table"],
+  "properties": {
+    "module": {
+      "type": "string",
+      "title": "Module",
+      "description": "Hyperion module to extract from",
+      "enum": ["essbase", "planning"],
+      "default": "essbase",
+      "propertyOrder": 1
+    },
+    "application": {
+      "type": "string",
+      "title": "Application",
+      "description": "Essbase application name or Planning application name",
+      "propertyOrder": 2
+    },
+    "database": {
+      "type": "string",
+      "title": "Database / Cube",
+      "description": "Essbase database (cube) name. Required for Essbase module.",
+      "propertyOrder": 3,
+      "options": {
+        "dependencies": {
+          "module": "essbase"
+        }
+      }
+    },
+    "mdx_query": {
+      "type": "string",
+      "title": "MDX Query",
+      "description": "MDX SELECT statement for data extraction. Required for Essbase; optional for Planning.",
+      "format": "textarea",
+      "propertyOrder": 4
+    },
+    "plan_type": {
+      "type": "string",
+      "title": "Plan Type",
+      "description": "Plan type name for data export. Required for Planning module.",
+      "propertyOrder": 5,
+      "options": {
+        "dependencies": {
+          "module": "planning"
+        }
+      }
+    },
+    "output_table": {
+      "type": "string",
+      "title": "Output Table Name",
+      "description": "Name of the output table in Keboola Storage (without .csv extension)",
+      "propertyOrder": 6
+    }
+  }
+}

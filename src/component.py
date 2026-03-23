@@ -1,99 +1,121 @@
 """
-Template Component main class.
+Oracle Hyperion EPM Extractor — main component.
 
+Phase 1 MVP:
+  - Essbase 21C: MDX queries via REST API (port 9010, Basic Auth)
+  - Hyperion Planning: data slice export via REST API (port 9000, CSS SSO)
 """
 
 import csv
 import logging
-from datetime import datetime
 
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 
-from configuration import Configuration
+from configuration import Configuration, RowConfiguration
+from essbase_client import EssbaseClient, mdx_response_to_rows
+from planning_client import PlanningClient, planning_export_to_rows
 
 
 class Component(ComponentBase):
-    """
-    Extends base class for general Python components. Initializes the CommonInterface
-    and performs configuration validation.
-
-    For easier debugging the data folder is picked up by default from `../data` path,
-    relative to working directory.
-
-    If `debug` parameter is present in the `config.json`, the default logger is set to verbose DEBUG mode.
-    """
 
     def __init__(self):
         super().__init__()
 
     def run(self):
-        """
-        Main execution code
-        """
-
-        # ####### EXAMPLE TO REMOVE
-        # check for missing configuration parameters
         params = Configuration(**self.configuration.parameters)
 
-        # Access parameters in configuration
-        if params.print_hello:
-            logging.info("Hello World")
+        rows = self.configuration.config_rows
+        if not rows:
+            raise UserException("No configuration rows defined. Add at least one extraction row.")
 
-        # get input table definitions
-        input_tables = self.get_input_tables_definitions()
-        for table in input_tables:
-            logging.info(f"Received input table: {table.name} with path: {table.full_path}")
+        essbase_client = None
+        planning_client = None
 
-        if len(input_tables) == 0:
-            raise UserException("No input tables found")
+        for row in rows:
+            if not row.is_disabled:
+                row_params = RowConfiguration(**row.configuration.parameters)
+                logging.info(f"Processing row '{row.id}': module={row_params.module}, app={row_params.application}")
 
-        # get last state data/in/state.json from previous run
-        previous_state = self.get_state_file()
-        logging.info(previous_state.get("some_parameter"))
+                if row_params.module == "essbase":
+                    if essbase_client is None:
+                        essbase_client = self._build_essbase_client(params)
+                    self._extract_essbase(essbase_client, row_params)
 
-        # Create output table (Table definition - just metadata)
-        table = self.create_out_table_definition("output.csv", incremental=True, primary_key=["timestamp"])
+                elif row_params.module == "planning":
+                    if planning_client is None:
+                        planning_client = self._build_planning_client(params)
+                    self._extract_planning(planning_client, row_params)
 
-        # get file path of the table (data/out/tables/Features.csv)
-        out_table_path = table.full_path
-        logging.info(out_table_path)
+    def _build_essbase_client(self, params: Configuration) -> EssbaseClient:
+        host = params.get_essbase_host()
+        logging.info(f"Connecting to Essbase at {host}:{params.essbase_port}")
+        client = EssbaseClient(
+            host=host,
+            port=params.essbase_port,
+            username=params.username,
+            password=params.password,
+            ssl_verify=params.ssl_verify,
+        )
+        version = client.verify_connection()
+        logging.info(f"Connected to Essbase version: {version}")
+        return client
 
-        # Add timestamp column and save into out_table_path
-        input_table = input_tables[0]
-        with (
-            open(input_table.full_path, "r") as inp_file,
-            open(table.full_path, mode="wt", encoding="utf-8", newline="") as out_file,
-        ):
-            reader = csv.DictReader(inp_file)
+    def _build_planning_client(self, params: Configuration) -> PlanningClient:
+        logging.info(f"Connecting to Hyperion Planning at {params.hyperion_url}")
+        return PlanningClient(
+            base_url=params.hyperion_url,
+            username=params.username,
+            password=params.password,
+            ssl_verify=params.ssl_verify,
+        )
 
-            columns = list(reader.fieldnames)
-            # append timestamp
-            columns.append("timestamp")
+    def _extract_essbase(self, client: EssbaseClient, row: RowConfiguration) -> None:
+        if not row.mdx_query:
+            raise UserException(
+                f"Row '{row.output_table}': 'mdx_query' is required for Essbase extraction."
+            )
 
-            # write result with column added
-            writer = csv.DictWriter(out_file, fieldnames=columns)
+        logging.info(f"Executing MDX on {row.application}/{row.database} -> {row.output_table}")
+        response = client.execute_mdx(row.application, row.database, row.mdx_query)
+
+        columns, data_rows = mdx_response_to_rows(response)
+        if not columns:
+            logging.warning(f"MDX query returned no data for {row.application}/{row.database}.")
+            return
+
+        self._write_table(row.output_table, columns, data_rows)
+        logging.info(f"Written {len(data_rows)} rows to '{row.output_table}'.")
+
+    def _extract_planning(self, client: PlanningClient, row: RowConfiguration) -> None:
+        logging.info(f"Exporting data slice from {row.application}/{row.plan_type} -> {row.output_table}")
+
+        payload: dict = {}
+        if row.mdx_query:
+            payload["query"] = row.mdx_query
+
+        response = client.export_data_slice(row.application, row.plan_type, payload)
+        columns, data_rows = planning_export_to_rows(response)
+
+        if not columns:
+            logging.warning(f"Planning export returned no data for {row.application}/{row.plan_type}.")
+            return
+
+        self._write_table(row.output_table, columns, data_rows)
+        logging.info(f"Written {len(data_rows)} rows to '{row.output_table}'.")
+
+    def _write_table(self, table_name: str, columns: list[str], rows: list[dict]) -> None:
+        table = self.create_out_table_definition(f"{table_name}.csv", incremental=False)
+        with open(table.full_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore")
             writer.writeheader()
-            for in_row in reader:
-                in_row["timestamp"] = datetime.now().isoformat()
-                writer.writerow(in_row)
-
-        # Save table manifest (output.csv.manifest) from the Table definition
+            writer.writerows(rows)
         self.write_manifest(table)
 
-        # Write new state - will be available next run
-        self.write_state_file({"some_state_parameter": "value"})
 
-        # ####### EXAMPLE TO REMOVE END
-
-
-"""
-        Main entrypoint
-"""
 if __name__ == "__main__":
     try:
         comp = Component()
-        # this triggers the run method by default and is controlled by the configuration.action parameter
         comp.execute_action()
     except UserException as exc:
         logging.exception(exc)
