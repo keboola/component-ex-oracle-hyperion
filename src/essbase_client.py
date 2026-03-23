@@ -14,7 +14,7 @@ class EssbaseClient:
         self.ssl_verify = ssl_verify
         self.session = requests.Session()
         self.session.auth = (username, password)
-        self.session.headers.update({"Accept": "application/json", "Content-Type": "application/json"})
+        self.session.headers.update({"Content-Type": "application/json"})
 
     def verify_connection(self) -> str:
         """Return Essbase version string — use to verify connectivity."""
@@ -70,47 +70,37 @@ def mdx_response_to_rows(response: dict) -> tuple[list[str], list[dict]]:
     """
     Parse Essbase MDX response into (column_names, rows).
 
-    The Essbase 21C MDX response structure:
+    Actual Essbase 21C MDX response structure:
     {
-      "axis": [
-        {"tuples": [[member, ...], ...], "dimensionInfo": [{"name": dim}, ...]},  # columns axis
-        {"tuples": [[member, ...], ...], "dimensionInfo": [{"name": dim}, ...]}   # rows axis
-      ],
-      "data": {"ranges": [{"start": 0, "values": [v1, v2, ...]}]}
+      "metadata": {"page": [...], "column": ["Year"], "row": ["Product"]},
+      "data": [
+        ["", "Jan", "Feb", "Mar"],      # header row: first cell empty, rest are column members
+        ["Cola",  1710.0, 1666.0, ...], # data rows: first cell is row member, rest are values
+        ...
+      ]
     }
     """
-    axes = response.get("axis", [])
-    data_section = response.get("data", {})
-    values = []
-    for r in data_section.get("ranges", []):
-        values.extend(r.get("values", []))
+    metadata = response.get("metadata", {})
+    data = response.get("data", [])
 
-    if not axes:
-        logging.warning("MDX response contained no axis data.")
+    if not data:
+        logging.warning("MDX response contained no data.")
         return [], []
 
-    # Axis 0 = columns, Axis 1 = rows (standard MDX convention)
-    col_axis = axes[0] if len(axes) > 0 else {}
-    row_axis = axes[1] if len(axes) > 1 else {}
+    row_dims = metadata.get("row", ["row"])
+    col_members = data[0][1:]  # first row, skip leading empty cell
 
-    col_tuples = col_axis.get("tuples", [])
-    col_dims = [d.get("name", f"col_{i}") for i, d in enumerate(col_axis.get("dimensionInfo", []))]
-
-    row_tuples = row_axis.get("tuples", [])
-    row_dims = [d.get("name", f"row_{i}") for i, d in enumerate(row_axis.get("dimensionInfo", []))]
-
-    # Column headers: join tuple members with "/" if multi-dim
-    col_headers = ["/".join(t) if isinstance(t, list) else str(t) for t in col_tuples]
-
-    columns = row_dims + col_headers
+    # Build column names: row dimension name(s) + column member names
+    columns = row_dims + [str(c) for c in col_members]
 
     rows = []
-    n_cols = len(col_tuples) or 1
-    for row_idx, row_tuple in enumerate(row_tuples):
-        row_members = list(row_tuple) if isinstance(row_tuple, list) else [row_tuple]
-        row_values = values[row_idx * n_cols: (row_idx + 1) * n_cols]
-        row_dict = dict(zip(row_dims, row_members))
-        row_dict.update(dict(zip(col_headers, row_values)))
+    for raw_row in data[1:]:
+        if not raw_row:
+            continue
+        row_member = raw_row[0]
+        values = raw_row[1:]
+        row_dict = {row_dims[0]: row_member}
+        row_dict.update({str(col): val for col, val in zip(col_members, values)})
         rows.append(row_dict)
 
     return columns, rows

@@ -25,27 +25,28 @@ class Component(ComponentBase):
     def run(self):
         params = Configuration(**self.configuration.parameters)
 
-        rows = self.configuration.config_rows
-        if not rows:
+        raw_rows = self.configuration.config_data.get("config_rows", [])
+        if not raw_rows:
             raise UserException("No configuration rows defined. Add at least one extraction row.")
 
         essbase_client = None
         planning_client = None
 
-        for row in rows:
-            if not row.is_disabled:
-                row_params = RowConfiguration(**row.configuration.parameters)
-                logging.info(f"Processing row '{row.id}': module={row_params.module}, app={row_params.application}")
+        for row in raw_rows:
+            if row.get("is_disabled"):
+                continue
+            row_params = RowConfiguration(**row.get("parameters", {}))
+            logging.info(f"Processing row '{row.get('id', '')}': module={row_params.module}, app={row_params.application}")
 
-                if row_params.module == "essbase":
-                    if essbase_client is None:
-                        essbase_client = self._build_essbase_client(params)
-                    self._extract_essbase(essbase_client, row_params)
+            if row_params.module == "essbase":
+                if essbase_client is None:
+                    essbase_client = self._build_essbase_client(params)
+                self._extract_essbase(essbase_client, row_params)
 
-                elif row_params.module == "planning":
-                    if planning_client is None:
-                        planning_client = self._build_planning_client(params)
-                    self._extract_planning(planning_client, row_params)
+            elif row_params.module == "planning":
+                if planning_client is None:
+                    planning_client = self._build_planning_client(params)
+                self._extract_planning(planning_client, row_params)
 
     def _build_essbase_client(self, params: Configuration) -> EssbaseClient:
         host = params.get_essbase_host()
