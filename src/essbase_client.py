@@ -32,17 +32,6 @@ class EssbaseClient:
         payload = {"query": mdx}
         return self._post(f"/applications/{application}/databases/{database}/mdx", payload)
 
-    def get_dimensions(self, application: str, database: str) -> list[dict]:
-        return self._get(f"/applications/{application}/databases/{database}/dimensions").get("items", [])
-
-    def get_members(self, application: str, database: str, dimension: str) -> list[dict]:
-        return self._get(f"/applications/{application}/databases/{database}/dimensions/{dimension}/members").get(
-            "items", []
-        )
-
-    def get_substitution_variables(self, application: str, database: str) -> list[dict]:
-        return self._get(f"/applications/{application}/databases/{database}/variables").get("items", [])
-
     def _get(self, path: str) -> Any:
         url = f"{self.base_url}{path}"
         try:

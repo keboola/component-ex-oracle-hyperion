@@ -43,17 +43,8 @@ class PlanningClient:
     def get_applications(self) -> list[dict]:
         return self._get("/applications").get("items", [])
 
-    def get_dimensions(self, application: str) -> list[dict]:
-        return self._get(f"/applications/{application}/dimensions").get("items", [])
-
-    def get_members(self, application: str, dimension: str) -> list[dict]:
-        return self._get(f"/applications/{application}/dimensions/{dimension}/members").get("items", [])
-
     def export_data_slice(self, application: str, plan_type: str, payload: dict) -> dict:
         return self._post(f"/applications/{application}/plantypes/{plan_type}/exportdataslice", payload)
-
-    def get_substitution_variables(self, application: str) -> list[dict]:
-        return self._get(f"/applications/{application}/substitutionvariables").get("items", [])
 
     def _get(self, path: str) -> Any:
         url = f"{self.base_url}{self.API_PATH}{path}"

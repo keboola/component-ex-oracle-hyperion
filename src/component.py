@@ -42,6 +42,8 @@ class Component(ComponentBase):
             if row_params.module == "essbase":
                 if essbase_client is None:
                     essbase_client = self._build_essbase_client(self.params)
+                    version = essbase_client.verify_connection()
+                    logging.info(f"Connected to Essbase version: {version}")
                 self._extract_essbase(essbase_client, row_params)
 
             elif row_params.module == "planning":
@@ -78,16 +80,13 @@ class Component(ComponentBase):
     def _build_essbase_client(self, params: Configuration) -> EssbaseClient:
         host = params.get_essbase_host()
         logging.info(f"Connecting to Essbase at {host}:{params.essbase_port}")
-        client = EssbaseClient(
+        return EssbaseClient(
             host=host,
             port=params.essbase_port,
             username=params.username,
             password=params.password,
             ssl_verify=params.ssl_verify,
         )
-        version = client.verify_connection()
-        logging.info(f"Connected to Essbase version: {version}")
-        return client
 
     def _build_planning_client(self, params: Configuration) -> PlanningClient:
         logging.info(f"Connecting to Hyperion Planning at {params.hyperion_url}")
