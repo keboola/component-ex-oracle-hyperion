@@ -19,7 +19,6 @@ from planning_client import PlanningClient, planning_export_to_rows
 
 
 class Component(ComponentBase):
-
     def __init__(self):
         super().__init__()
 
@@ -37,7 +36,9 @@ class Component(ComponentBase):
             if row.get("is_disabled"):
                 continue
             row_params = RowConfiguration(**row.get("parameters", {}))
-            logging.info(f"Processing row '{row.get('id', '')}': module={row_params.module}, app={row_params.application}")
+            logging.info(
+                f"Processing row '{row.get('id', '')}': module={row_params.module}, app={row_params.application}"
+            )
 
             if row_params.module == "essbase":
                 if essbase_client is None:
@@ -103,9 +104,7 @@ class Component(ComponentBase):
 
     def _extract_essbase(self, client: EssbaseClient, row: RowConfiguration) -> None:
         if not row.mdx_query:
-            raise UserException(
-                f"Row '{row.output_table}': 'mdx_query' is required for Essbase extraction."
-            )
+            raise UserException(f"Row '{row.output_table}': 'mdx_query' is required for Essbase extraction.")
 
         logging.info(f"Executing MDX on {row.application}/{row.database} -> {row.output_table}")
         response = client.execute_mdx(row.application, row.database, row.mdx_query)

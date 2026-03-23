@@ -1,10 +1,10 @@
 import os
 import unittest
-
 from unittest import mock
 
-from component import Component
 from keboola.component.exceptions import UserException
+
+from component import Component
 
 
 class TestComponent(unittest.TestCase):

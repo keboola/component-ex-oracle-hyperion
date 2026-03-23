@@ -29,9 +29,7 @@ class PlanningClient:
             )
             resp.raise_for_status()
         except requests.HTTPError as e:
-            raise UserException(
-                f"Planning authentication failed [{e.response.status_code}]: {e.response.text}"
-            ) from e
+            raise UserException(f"Planning authentication failed [{e.response.status_code}]: {e.response.text}") from e
         except requests.ConnectionError as e:
             raise UserException(f"Cannot connect to Planning server at {self.base_url}: {e}") from e
 

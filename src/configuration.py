@@ -32,6 +32,7 @@ class Configuration(BaseModel):
         if self.essbase_host:
             return self.essbase_host
         from urllib.parse import urlparse
+
         return urlparse(self.hyperion_url).hostname or self.hyperion_url
 
 

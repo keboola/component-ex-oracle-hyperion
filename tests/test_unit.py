@@ -1,4 +1,5 @@
 """Unit tests for parser functions — no API calls required."""
+
 import sys
 import unittest
 from pathlib import Path

@@ -36,9 +36,9 @@ class EssbaseClient:
         return self._get(f"/applications/{application}/databases/{database}/dimensions").get("items", [])
 
     def get_members(self, application: str, database: str, dimension: str) -> list[dict]:
-        return self._get(
-            f"/applications/{application}/databases/{database}/dimensions/{dimension}/members"
-        ).get("items", [])
+        return self._get(f"/applications/{application}/databases/{database}/dimensions/{dimension}/members").get(
+            "items", []
+        )
 
     def get_substitution_variables(self, application: str, database: str) -> list[dict]:
         return self._get(f"/applications/{application}/databases/{database}/variables").get("items", [])
@@ -61,7 +61,9 @@ class EssbaseClient:
             resp.raise_for_status()
             return resp.json()
         except requests.HTTPError as e:
-            raise UserException(f"Essbase API error [{e.response.status_code}] on POST {path}: {e.response.text}") from e
+            raise UserException(
+                f"Essbase API error [{e.response.status_code}] on POST {path}: {e.response.text}"
+            ) from e
         except requests.ConnectionError as e:
             raise UserException(f"Cannot connect to Essbase at {self.base_url}: {e}") from e
 
