@@ -1,4 +1,6 @@
 import logging
+from typing import Literal
+from urllib.parse import urlparse
 
 from keboola.component.exceptions import UserException
 from pydantic import BaseModel, Field, ValidationError
@@ -31,15 +33,13 @@ class Configuration(BaseModel):
         """Return Essbase host — falls back to Hyperion URL host if not set."""
         if self.essbase_host:
             return self.essbase_host
-        from urllib.parse import urlparse
-
         return urlparse(self.hyperion_url).hostname or self.hyperion_url
 
 
 class RowConfiguration(BaseModel):
     """Row-level configuration — one row per extraction query."""
 
-    module: str  # "essbase" or "planning"
+    module: Literal["essbase", "planning"]
     application: str
     database: str = ""  # Essbase cube name
     mdx_query: str = ""  # MDX SELECT statement for Essbase
@@ -54,9 +54,6 @@ class RowConfiguration(BaseModel):
         except ValidationError as e:
             error_messages = [f"{'.'.join(str(loc) for loc in err['loc'])}: {err['msg']}" for err in e.errors()]
             raise UserException(f"Row configuration error: {', '.join(error_messages)}")
-
-        if self.module not in ("essbase", "planning"):
-            raise UserException(f"Invalid module '{self.module}'. Must be 'essbase' or 'planning'.")
 
         if self.module == "essbase" and not self.database:
             raise UserException("'database' (cube name) is required for the Essbase module.")

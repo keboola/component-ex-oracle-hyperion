@@ -21,10 +21,9 @@ from planning_client import PlanningClient, planning_export_to_rows
 class Component(ComponentBase):
     def __init__(self):
         super().__init__()
+        self.params = Configuration(**self.configuration.parameters)
 
     def run(self):
-        params = Configuration(**self.configuration.parameters)
-
         raw_rows = self.configuration.config_data.get("config_rows", [])
         if not raw_rows:
             raise UserException("No configuration rows defined. Add at least one extraction row.")
@@ -42,27 +41,24 @@ class Component(ComponentBase):
 
             if row_params.module == "essbase":
                 if essbase_client is None:
-                    essbase_client = self._build_essbase_client(params)
+                    essbase_client = self._build_essbase_client(self.params)
                 self._extract_essbase(essbase_client, row_params)
 
             elif row_params.module == "planning":
                 if planning_client is None:
-                    planning_client = self._build_planning_client(params)
+                    planning_client = self._build_planning_client(self.params)
                 self._extract_planning(planning_client, row_params)
 
     @sync_action("listApplications")
     def list_applications(self) -> list[SelectElement]:
         """Return all Essbase applications for UI dropdown."""
-        params = Configuration(**self.configuration.parameters)
-        client = self._build_essbase_client(params)
+        client = self._build_essbase_client(self.params)
         apps = client.get_applications()
         return [SelectElement(value=app["name"], label=app.get("alias") or app["name"]) for app in apps]
 
     @sync_action("listDatabases")
     def list_databases(self) -> list[SelectElement] | ValidationResult:
         """Return databases for a given application. Requires 'application' in the config row parameters."""
-        params = Configuration(**self.configuration.parameters)
-
         # application may come from the current row being edited (sent in config_data)
         rows = self.configuration.config_data.get("config_rows", [])
         application = ""
@@ -75,7 +71,7 @@ class Component(ComponentBase):
                 MessageType.WARNING,
             )
 
-        client = self._build_essbase_client(params)
+        client = self._build_essbase_client(self.params)
         databases = client.get_databases(application)
         return [SelectElement(value=db["name"], label=db.get("alias") or db["name"]) for db in databases]
 

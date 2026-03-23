@@ -65,6 +65,8 @@ class PlanningClient:
             raise UserException(
                 f"Planning API error [{e.response.status_code}] on GET {path}: {e.response.text}"
             ) from e
+        except requests.ConnectionError as e:
+            raise UserException(f"Cannot connect to Planning server at {self.base_url}: {e}") from e
 
     def _post(self, path: str, payload: dict) -> Any:
         url = f"{self.base_url}{self.API_PATH}{path}"
@@ -76,6 +78,8 @@ class PlanningClient:
             raise UserException(
                 f"Planning API error [{e.response.status_code}] on POST {path}: {e.response.text}"
             ) from e
+        except requests.ConnectionError as e:
+            raise UserException(f"Cannot connect to Planning server at {self.base_url}: {e}") from e
 
 
 def planning_export_to_rows(export_response: dict) -> tuple[list[str], list[dict]]:

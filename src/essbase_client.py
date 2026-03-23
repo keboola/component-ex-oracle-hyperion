@@ -95,13 +95,14 @@ def mdx_response_to_rows(response: dict) -> tuple[list[str], list[dict]]:
     # Build column names: row dimension name(s) + column member names
     columns = row_dims + [str(c) for c in col_members]
 
+    n_row_dims = len(row_dims)
     rows = []
     for raw_row in data[1:]:
         if not raw_row:
             continue
-        row_member = raw_row[0]
-        values = raw_row[1:]
-        row_dict = {row_dims[0]: row_member}
+        row_members = raw_row[:n_row_dims]
+        values = raw_row[n_row_dims:]
+        row_dict = dict(zip(row_dims, row_members))
         row_dict.update({str(col): val for col, val in zip(col_members, values)})
         rows.append(row_dict)
 
