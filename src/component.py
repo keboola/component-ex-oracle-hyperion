@@ -24,20 +24,26 @@ class Component(ComponentBase):
         self.params = Configuration(**self.configuration.parameters)
 
     def run(self):
-        raw_rows = self.configuration.config_rows
-        if not raw_rows:
-            raise UserException("No configuration rows defined. Add at least one extraction row.")
+        raw_rows = self.configuration.config_data.get("config_rows", [])
+
+        if raw_rows:
+            # Local / test mode: all rows provided in config_rows array
+            rows_to_process = [
+                RowConfiguration(**row.get("parameters", {}))
+                for row in raw_rows
+                if not row.get("is_disabled")
+            ]
+            if not rows_to_process:
+                raise UserException("No active configuration rows defined. Enable at least one row.")
+        else:
+            # Production mode: Keboola merges root + row parameters for each row execution
+            rows_to_process = [RowConfiguration(**self.configuration.parameters)]
 
         essbase_client = None
         planning_client = None
 
-        for row in raw_rows:
-            if row.get("is_disabled"):
-                continue
-            row_params = RowConfiguration(**row.get("parameters", {}))
-            logging.info(
-                f"Processing row '{row.get('id', '')}': module={row_params.module}, app={row_params.application}"
-            )
+        for row_params in rows_to_process:
+            logging.info(f"Processing: module={row_params.module}, app={row_params.application}")
 
             if row_params.module == "essbase":
                 if essbase_client is None:
@@ -62,7 +68,7 @@ class Component(ComponentBase):
     def list_databases(self) -> list[SelectElement] | ValidationResult:
         """Return databases for a given application. Requires 'application' in the config row parameters."""
         # application may come from the current row being edited (sent in config_data)
-        rows = self.configuration.config_rows
+        rows = self.configuration.config_data.get("config_rows", [])
         application = ""
         if rows:
             application = rows[0].get("parameters", {}).get("application", "")
