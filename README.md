@@ -96,6 +96,72 @@ Run the test suite:
 docker-compose run --rm test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+### Test VM — GCP Firewall Setup
+
+The test Oracle Hyperion environment runs on a GCP VM at `34.31.58.133`. Two firewall rules must exist to allow Keboola's runner to reach it:
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 9010 | TCP | Essbase 21C REST API |
+| 9000 | TCP | Hyperion Planning / EPM Shared Services |
+
+Add the [Keboola public IP ranges](https://help.keboola.com/extractors/other/ip-addresses/) as source IP ranges in the GCP firewall rule for both ports.
+
+### Test VM — Starting Oracle Hyperion Services
+
+The VM runs Windows. Services must be started in the following order after a reboot:
+
+**1. Oracle Database** — starts automatically as a Windows service (listener on port 1521, service name `epm`).
+
+**2. EPM AdminServer** (port 7001):
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:\temp_wls\start_epm_admin.cmd
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**3. EPMServer0 / Planning** (port 9000) — either via Windows Services or manually:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+startManagedWebLogic.cmd EPMServer0 http://localhost:7001
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Or use the Windows service:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+net start HyS9EPMServer_epmsystem1
+net start HyS9RMIRegistry_epmsystem1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**4. Essbase AdminServer** (port 7010):
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:\temp_wls\start_admin5.cmd
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**5. Essbase managed servers** (port 9010) — start via WLST:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:\Oracle\Middleware\oracle_common\common\bin\wlst.cmd C:\temp_wls\start_managed.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Where `start_managed.py` contains:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+start('essbase_server1', 'Server')
+start('eas_server1', 'Server')
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Port reference:**
+
+| Port | Service |
+|------|---------|
+| 1521 | Oracle DB listener |
+| 7001 | EPM AdminServer |
+| 7010 | Essbase AdminServer |
+| 9000 | EPM Shared Services / Planning / Workspace |
+| 9010 | Essbase REST API |
+| 9110 | EAS (Essbase Administration Services) |
+
 Integration
 ===========
 
