@@ -105,9 +105,11 @@ class EssbaseClient:
             return False
 
 
-def mdx_response_to_rows(response: dict) -> tuple[list[str], list[dict]]:
+def mdx_response_to_rows(response: dict) -> tuple[list[str], list[dict], list[str]]:
     """
-    Parse Essbase MDX response into (column_names, rows).
+    Parse Essbase MDX response into (column_names, rows, primary_key_columns).
+
+    primary_key_columns are the row dimension column names — they uniquely identify each row.
 
     Actual Essbase 21C MDX response structure:
     {
@@ -124,7 +126,7 @@ def mdx_response_to_rows(response: dict) -> tuple[list[str], list[dict]]:
 
     if not data:
         logging.warning("MDX response contained no data.")
-        return [], []
+        return [], [], []
 
     row_dims = metadata.get("row", ["row"])
     col_members = data[0][1:]  # first row, skip leading empty cell
@@ -143,4 +145,4 @@ def mdx_response_to_rows(response: dict) -> tuple[list[str], list[dict]]:
         row_dict.update({str(col): val for col, val in zip(col_members, values)})
         rows.append(row_dict)
 
-    return columns, rows
+    return columns, rows, row_dims

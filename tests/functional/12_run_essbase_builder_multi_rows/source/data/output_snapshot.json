@@ -17,9 +17,9 @@
     },
     "essbase_builder_multi_rows.csv.manifest": {
       "columns": null,
-      "hash": "sha256:7a11e3d6cf321073a89c589a23080dd39020efee57b2936ff58ed1049cbd7ffb",
+      "hash": "sha256:0b87d45af9dabc43c04bf0f1870056f5a038f1d22e770e1e73534ea42582b2a8",
       "row_count": null,
-      "size_bytes": 141
+      "size_bytes": 1052
     }
   },
   "version": "1.0"

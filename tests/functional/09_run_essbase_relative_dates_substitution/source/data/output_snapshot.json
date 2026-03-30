@@ -15,9 +15,9 @@
     },
     "essbase_relative_dates.csv.manifest": {
       "columns": null,
-      "hash": "sha256:bedaab844e73690334566cfd3c80332dbb17b68ade5abea7a3e223873c4effb5",
+      "hash": "sha256:da7dc1def678091c703cce5e47febcf7ccef6cdcad30bebcab6dff0e0ef923e9",
       "row_count": null,
-      "size_bytes": 140
+      "size_bytes": 758
     }
   },
   "version": "1.0"

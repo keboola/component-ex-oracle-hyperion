@@ -11,6 +11,7 @@ import logging
 from datetime import UTC, datetime
 
 from keboola.component.base import ComponentBase, sync_action
+from keboola.component.dao import BaseType, ColumnDefinition, SupportedDataTypes
 from keboola.component.exceptions import UserException
 from keboola.component.sync_actions import MessageType, SelectElement, ValidationResult
 from keboola.utils.date import get_past_date, parse_datetime_interval
@@ -232,12 +233,12 @@ class Component(ComponentBase):
         logging.info(f"Executing MDX on {row.application}/{row.database} -> {row.output_table}")
         response = client.execute_mdx(row.application, row.database, mdx)
 
-        columns, data_rows = mdx_response_to_rows(response)
+        columns, data_rows, pk_columns = mdx_response_to_rows(response)
         if not columns:
             logging.warning(f"MDX query returned no data for {row.application}/{row.database}.")
             return
 
-        self._write_table(row.output_table, columns, data_rows, incremental=row.incremental)
+        self._write_table(row.output_table, columns, data_rows, incremental=row.incremental, primary_key=pk_columns)
         logging.info(f"Written {len(data_rows)} rows to '{row.output_table}'.")
 
         if row.incremental and until_str:
@@ -260,13 +261,38 @@ class Component(ComponentBase):
         self._write_table(row.output_table, columns, data_rows)
         logging.info(f"Written {len(data_rows)} rows to '{row.output_table}'.")
 
-    def _write_table(self, table_name: str, columns: list[str], rows: list[dict], incremental: bool = False) -> None:
-        table = self.create_out_table_definition(f"{table_name}.csv", incremental=incremental)
+    def _write_table(
+        self,
+        table_name: str,
+        columns: list[str],
+        rows: list[dict],
+        incremental: bool = False,
+        primary_key: list[str] | None = None,
+    ) -> None:
+        schema = self._build_schema(columns, rows, primary_key or [])
+        table = self.create_out_table_definition(
+            f"{table_name}.csv", incremental=incremental, schema=schema, primary_key=primary_key or []
+        )
         with open(table.full_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore")
             writer.writeheader()
             writer.writerows(rows)
         self.write_manifest(table)
+
+    @staticmethod
+    def _build_schema(columns: list[str], rows: list[dict], primary_key: list[str]) -> dict[str, ColumnDefinition]:
+        """Infer column types from the first data row. Numeric Python values → NUMERIC, everything else → STRING."""
+        sample = rows[0] if rows else {}
+        pk_set = set(primary_key)
+        schema = {}
+        for col in columns:
+            val = sample.get(col)
+            if isinstance(val, (int, float)):
+                base = BaseType(dtype=SupportedDataTypes.NUMERIC)
+            else:
+                base = BaseType(dtype=SupportedDataTypes.STRING)
+            schema[col] = ColumnDefinition(data_types=base, nullable=True, primary_key=col in pk_set)
+        return schema
 
 
 if __name__ == "__main__":
