@@ -41,10 +41,15 @@ class EssbaseClient:
         return self._get(f"/applications/{application}/databases/{database}/dimensions").get("items", [])
 
     def get_members(self, application: str, database: str, dimension: str) -> list[dict]:
-        """Lists members for a dimension."""
-        return self._get(f"/applications/{application}/databases/{database}/dimensions/{dimension}/members").get(
-            "items", []
-        )
+        """Lists members for a dimension via MDX query (the REST API has no direct members endpoint)."""
+        mdx = f"SELECT {{[{dimension}].Members}} ON COLUMNS FROM [{application}.{database}]"
+        response = self.execute_mdx(application, database, mdx)
+        data = response.get("data", [])
+        if not data:
+            return []
+        # data[0] is the header row: first cell is empty/dimension label, rest are member names
+        members = [{"name": str(m)} for m in data[0][1:]]
+        return members
 
     def execute_mdx(self, application: str, database: str, mdx: str) -> dict:
         """Execute an MDX query and return the raw grid response."""

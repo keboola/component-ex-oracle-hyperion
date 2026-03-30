@@ -6,23 +6,15 @@
     "#password": "DUMMY_PASSWORD",
     "essbase_host": "34.31.58.133",
     "essbase_port": 9010,
+    "ssl_verify": false,
     "use_ssl": false,
-        "ssl_verify": false
-  },
-  "config_rows": [
-    {
-      "id": "row-explicit-dates",
-      "is_disabled": false,
-      "parameters": {
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
-        "output_table": "essbase_explicit_dates",
-        "since": "2024-01-01",
-        "until": "2024-03-31",
-        "incremental": true
-      }
-    }
-  ]
+    "module": "essbase",
+    "application": "Sample",
+    "database": "Basic",
+    "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
+    "output_table": "essbase_explicit_dates",
+    "since": "2024-01-01",
+    "until": "2024-03-31",
+    "incremental": true
+  }
 }

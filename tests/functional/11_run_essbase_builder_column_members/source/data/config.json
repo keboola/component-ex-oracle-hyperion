@@ -6,29 +6,21 @@
     "#password": "DUMMY_PASSWORD",
     "essbase_host": "34.31.58.133",
     "essbase_port": 9010,
+    "ssl_verify": false,
     "use_ssl": false,
-        "ssl_verify": false
-  },
-  "config_rows": [
-    {
-      "id": "row-builder-cols",
-      "is_disabled": false,
-      "parameters": {
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "query_mode": "builder",
-        "column_dimension": "Year",
-        "column_members": [
-          "Jan",
-          "Feb",
-          "Mar"
-        ],
-        "row_dimensions": [
-          "Product"
-        ],
-        "output_table": "essbase_builder_columns"
-      }
-    }
-  ]
+    "module": "essbase",
+    "application": "Sample",
+    "database": "Basic",
+    "query_mode": "builder",
+    "column_dimension": "Year",
+    "column_members": [
+      "Jan",
+      "Feb",
+      "Mar"
+    ],
+    "row_dimensions": [
+      "Product"
+    ],
+    "output_table": "essbase_builder_columns"
+  }
 }

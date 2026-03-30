@@ -16,7 +16,7 @@ from keboola.component.exceptions import UserException
 from keboola.component.sync_actions import MessageType, SelectElement, ValidationResult
 from keboola.utils.date import get_past_date, parse_datetime_interval
 
-from configuration import Configuration, RowConfiguration
+from configuration import Configuration
 from essbase_client import EssbaseClient, mdx_response_to_rows
 from planning_client import PlanningClient, planning_export_to_rows
 
@@ -27,18 +27,7 @@ class Component(ComponentBase):
         self.params = Configuration(**self.configuration.parameters)
 
     def run(self):
-        raw_rows = self.configuration.config_data.get("config_rows", [])
-
-        if raw_rows:
-            # Local / test mode: all rows provided in config_rows array
-            rows_to_process = [
-                RowConfiguration(**row.get("parameters", {})) for row in raw_rows if not row.get("is_disabled")
-            ]
-            if not rows_to_process:
-                raise UserException("No active configuration rows defined. Enable at least one row.")
-        else:
-            # Production mode: Keboola merges root + row parameters for each row execution
-            rows_to_process = [RowConfiguration(**self.configuration.parameters)]
+        rows_to_process = [self.params]
 
         essbase_client = None
         planning_client = None
@@ -65,15 +54,18 @@ class Component(ComponentBase):
         apps = client.get_applications()
         return [SelectElement(value=app["name"], label=app.get("alias") or app["name"]) for app in apps]
 
+    def _row_params(self) -> dict:
+        """Return the current row parameters for sync actions.
+
+        The platform always merges root + row parameters into a single flat
+        parameters dict before calling a sync action.
+        """
+        return self.configuration.parameters
+
     @sync_action("listDatabases")
     def list_databases(self) -> list[SelectElement] | ValidationResult:
-        """Return databases for a given application. Requires 'application' in the config row parameters."""
-        # application may come from the current row being edited (sent in config_data)
-        rows = self.configuration.config_data.get("config_rows", [])
-        application = ""
-        if rows:
-            application = rows[0].get("parameters", {}).get("application", "")
-
+        """Return databases for a given application."""
+        application = self._row_params().get("application", "")
         if not application:
             return ValidationResult(
                 "Select or enter an Application name first, then reload databases.",
@@ -87,8 +79,7 @@ class Component(ComponentBase):
     @sync_action("loadTables")
     def load_tables(self) -> list[SelectElement] | ValidationResult:
         """Return cube dimensions for the selected application/database."""
-        rows = self.configuration.config_data.get("config_rows", [])
-        params = rows[0].get("parameters", {}) if rows else {}
+        params = self._row_params()
         application = params.get("application", "")
         database = params.get("database", "")
 
@@ -105,8 +96,7 @@ class Component(ComponentBase):
     @sync_action("loadFields")
     def load_fields(self) -> list[SelectElement] | ValidationResult:
         """Return members for the selected column dimension."""
-        rows = self.configuration.config_data.get("config_rows", [])
-        params = rows[0].get("parameters", {}) if rows else {}
+        params = self._row_params()
         application = params.get("application", "")
         database = params.get("database", "")
         dimension = params.get("column_dimension", "")
@@ -142,7 +132,7 @@ class Component(ComponentBase):
             ssl_verify=params.ssl_verify,
         )
 
-    def _resolve_dates(self, row: RowConfiguration) -> tuple[str | None, str | None]:
+    def _resolve_dates(self, row: Configuration) -> tuple[str | None, str | None]:
         """Resolve since/until to YYYY-MM-DD strings. Returns (None, None) if no dates configured."""
         has_since = bool(row.since)
         has_until = bool(row.until)
@@ -186,7 +176,7 @@ class Component(ComponentBase):
         state[output_table] = {"last_run": until_str}
         self.write_state_file(state)
 
-    def _build_mdx_query(self, row: RowConfiguration) -> str:
+    def _build_mdx_query(self, row: Configuration) -> str:
         """Build MDX SELECT statement from builder-mode fields."""
         app_db = f"{row.application}.{row.database}"
 
@@ -210,7 +200,7 @@ class Component(ComponentBase):
 
         return f"SELECT\n  {col_set} ON COLUMNS,\n  {rows_clause} ON ROWS\nFROM [{app_db}]"
 
-    def _extract_essbase(self, client: EssbaseClient, row: RowConfiguration) -> None:
+    def _extract_essbase(self, client: EssbaseClient, row: Configuration) -> None:
         # Determine query
         if row.query_mode == "builder":
             mdx = self._build_mdx_query(row)
@@ -240,7 +230,7 @@ class Component(ComponentBase):
         if row.incremental and until_str:
             self._save_state(row.output_table, until_str)
 
-    def _extract_planning(self, client: PlanningClient, row: RowConfiguration) -> None:
+    def _extract_planning(self, client: PlanningClient, row: Configuration) -> None:
         logging.info(f"Exporting data slice from {row.application}/{row.plan_type} -> {row.output_table}")
 
         payload: dict = {}
