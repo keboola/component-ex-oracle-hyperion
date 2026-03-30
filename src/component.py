@@ -155,12 +155,6 @@ class Component(ComponentBase):
             state = self.get_state_file()
             effective_since = state.get(row.output_table, {}).get("last_run", "")
 
-        # Determine effective until
-        if row.until:
-            until_dt = get_past_date(row.until)
-        else:
-            until_dt = datetime.now(UTC)
-
         if effective_since:
             try:
                 since_dt, until_dt = parse_datetime_interval(effective_since, row.until or "now")
@@ -172,6 +166,7 @@ class Component(ComponentBase):
             since_str: str | None = since_dt.strftime("%Y-%m-%d")
         else:
             since_str = None
+            until_dt = get_past_date(row.until) if row.until else datetime.now(UTC)
 
         until_str: str | None = until_dt.strftime("%Y-%m-%d")
         return since_str, until_str

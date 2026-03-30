@@ -21,7 +21,7 @@ class PlanningClient:
     def _login(self, username: str, password: str) -> str:
         url = f"{self.base_url}/interop/logon"
         try:
-            resp = requests.post(
+            resp = self.session.post(
                 url,
                 json={"username": username, "password": password},
                 verify=self.ssl_verify,

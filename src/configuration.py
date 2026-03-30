@@ -51,8 +51,8 @@ class RowConfiguration(BaseModel):
     until: str = ""
     query_mode: Literal["custom", "builder"] = "custom"
     column_dimension: str = ""
-    column_members: list[str] = []
-    row_dimensions: list[str] = []
+    column_members: list[str] = Field(default_factory=list)
+    row_dimensions: list[str] = Field(default_factory=list)
 
     model_config = {"populate_by_name": True}
 
@@ -74,3 +74,8 @@ class RowConfiguration(BaseModel):
 
         if self.query_mode == "builder" and self.module == "essbase" and not self.row_dimensions:
             raise UserException("At least one 'row_dimensions' entry is required in builder mode.")
+
+        if self.query_mode == "builder" and self.module == "essbase" and self.column_dimension in self.row_dimensions:
+            raise UserException(
+                f"'column_dimension' ({self.column_dimension!r}) must not also appear in 'row_dimensions'."
+            )
