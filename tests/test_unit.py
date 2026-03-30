@@ -20,17 +20,19 @@ class TestMdxResponseToRows(unittest.TestCase):
                 ["Root Beer", 1615.0, 1654.0, 1723.0],
             ],
         }
-        columns, rows = mdx_response_to_rows(response)
+        columns, rows, pk = mdx_response_to_rows(response)
 
         self.assertEqual(columns, ["Product", "Jan", "Feb", "Mar"])
+        self.assertEqual(pk, ["Product"])
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0], {"Product": "Cola", "Jan": 1710.0, "Feb": 1666.0, "Mar": 1842.0})
         self.assertEqual(rows[1], {"Product": "Root Beer", "Jan": 1615.0, "Feb": 1654.0, "Mar": 1723.0})
 
     def test_empty_data(self):
-        columns, rows = mdx_response_to_rows({"metadata": {}, "data": []})
+        columns, rows, pk = mdx_response_to_rows({"metadata": {}, "data": []})
         self.assertEqual(columns, [])
         self.assertEqual(rows, [])
+        self.assertEqual(pk, [])
 
     def test_missing_metadata_uses_default_row_name(self):
         response = {
@@ -40,7 +42,7 @@ class TestMdxResponseToRows(unittest.TestCase):
                 ["Sales", 500.0],
             ],
         }
-        columns, rows = mdx_response_to_rows(response)
+        columns, rows, pk = mdx_response_to_rows(response)
         self.assertEqual(columns[0], "row")
 
     def test_single_row_single_column(self):
@@ -51,7 +53,7 @@ class TestMdxResponseToRows(unittest.TestCase):
                 ["Revenue", 999.9],
             ],
         }
-        columns, rows = mdx_response_to_rows(response)
+        columns, rows, pk = mdx_response_to_rows(response)
         self.assertEqual(columns, ["Account", "FY2024"])
         self.assertEqual(rows[0], {"Account": "Revenue", "FY2024": 999.9})
 
