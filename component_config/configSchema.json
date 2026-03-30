@@ -34,17 +34,25 @@
       "default": 9010,
       "propertyOrder": 5
     },
+    "use_ssl": {
+      "type": "boolean",
+      "title": "Use SSL (HTTPS)",
+      "description": "Connect to the Essbase REST API over HTTPS. Disable for plain HTTP servers.",
+      "default": true,
+      "propertyOrder": 6
+    },
     "ssl_verify": {
       "type": "boolean",
       "title": "Verify SSL Certificate",
+      "description": "Verify the server's SSL certificate. Disable only for self-signed certificates.",
       "default": true,
-      "propertyOrder": 6
+      "propertyOrder": 7
     },
     "debug": {
       "type": "boolean",
       "title": "Debug Mode",
       "default": false,
-      "propertyOrder": 7
+      "propertyOrder": 8
     }
   }
 }

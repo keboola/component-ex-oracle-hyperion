@@ -14,6 +14,7 @@ class Configuration(BaseModel):
     password: str = Field(alias="#password")
     essbase_host: str = ""
     essbase_port: int = 9010
+    use_ssl: bool = True
     ssl_verify: bool = True
     debug: bool = False
 

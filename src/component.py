@@ -129,6 +129,7 @@ class Component(ComponentBase):
             port=params.essbase_port,
             username=params.username,
             password=params.password,
+            use_ssl=params.use_ssl,
             ssl_verify=params.ssl_verify,
         )
 

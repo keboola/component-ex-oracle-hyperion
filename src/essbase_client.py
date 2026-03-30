@@ -15,8 +15,10 @@ _RETRY_BACKOFF_BASE = 5  # seconds; delay = base * 2^attempt
 class EssbaseClient:
     """Client for Essbase 21C REST API (port 9010, Basic Auth)."""
 
-    def __init__(self, host: str, port: int, username: str, password: str, ssl_verify: bool = True):
-        scheme = "https" if ssl_verify else "http"
+    def __init__(
+        self, host: str, port: int, username: str, password: str, use_ssl: bool = True, ssl_verify: bool = True
+    ):
+        scheme = "https" if use_ssl else "http"
         self.base_url = f"{scheme}://{host}:{port}/essbase/rest/v1"
         self.ssl_verify = ssl_verify
         self.session = requests.Session()

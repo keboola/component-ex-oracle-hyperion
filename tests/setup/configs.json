@@ -10,13 +10,14 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       }
     }
   },
   {
     "name": "02_listDatabases_no_app",
-    "description": "listDatabases without application set — expects a WARNING validation result",
+    "description": "listDatabases without application set \u2014 expects a WARNING validation result",
     "config": {
       "action": "listDatabases",
       "parameters": {
@@ -25,13 +26,14 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       }
     }
   },
   {
     "name": "03_listDatabases_with_app",
-    "description": "listDatabases for Sample application — returns Basic cube",
+    "description": "listDatabases for Sample application \u2014 returns Basic cube",
     "config": {
       "action": "listDatabases",
       "parameters": {
@@ -40,7 +42,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -62,7 +65,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -90,7 +94,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -120,7 +125,7 @@
   },
   {
     "name": "06_run_essbase_disabled_row",
-    "description": "Run with one disabled and one active row — disabled must be skipped",
+    "description": "Run with one disabled and one active row \u2014 disabled must be skipped",
     "config": {
       "action": "run",
       "parameters": {
@@ -129,7 +134,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -159,7 +165,7 @@
   },
   {
     "name": "07_run_essbase_incremental_with_state",
-    "description": "Incremental custom query: no since/until in config — reads last_run=2024-01-01 from in/state.json, resolves dates via parse_datetime_interval, runs MDX, writes updated state",
+    "description": "Incremental custom query: no since/until in config \u2014 reads last_run=2024-01-01 from in/state.json, resolves dates via parse_datetime_interval, runs MDX, writes updated state",
     "config": {
       "action": "run",
       "parameters": {
@@ -168,7 +174,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -188,7 +195,7 @@
   },
   {
     "name": "08_run_essbase_explicit_dates_substitution",
-    "description": "Date substitution: explicit since=2024-01-01 / until=2024-03-31 — {{since}} and {{until}} placeholders in MDX comment are replaced before the query is sent to the server",
+    "description": "Date substitution: explicit since=2024-01-01 / until=2024-03-31 \u2014 {{since}} and {{until}} placeholders in MDX comment are replaced before the query is sent to the server",
     "config": {
       "action": "run",
       "parameters": {
@@ -197,7 +204,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -219,7 +227,7 @@
   },
   {
     "name": "09_run_essbase_relative_dates_substitution",
-    "description": "Date substitution: relative since='5 days ago' / until='now' — verifies keboola.utils.date relative-date parsing and {{since}}/{{until}} substitution in MDX comment",
+    "description": "Date substitution: relative since='5 days ago' / until='now' \u2014 verifies keboola.utils.date relative-date parsing and {{since}}/{{until}} substitution in MDX comment",
     "config": {
       "action": "run",
       "parameters": {
@@ -228,7 +236,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -250,7 +259,7 @@
   },
   {
     "name": "10_run_essbase_builder_basic",
-    "description": "Builder mode basic: column_dimension=Year with no column_members (generates {[Year].Members} ON COLUMNS), row_dimensions=[Product] — full Year axis returned",
+    "description": "Builder mode basic: column_dimension=Year with no column_members (generates {[Year].Members} ON COLUMNS), row_dimensions=[Product] \u2014 full Year axis returned",
     "config": {
       "action": "run",
       "parameters": {
@@ -259,7 +268,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -271,7 +281,9 @@
             "database": "Basic",
             "query_mode": "builder",
             "column_dimension": "Year",
-            "row_dimensions": ["Product"],
+            "row_dimensions": [
+              "Product"
+            ],
             "output_table": "essbase_builder_basic"
           }
         }
@@ -289,7 +301,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -301,8 +314,14 @@
             "database": "Basic",
             "query_mode": "builder",
             "column_dimension": "Year",
-            "column_members": ["Jan", "Feb", "Mar"],
-            "row_dimensions": ["Product"],
+            "column_members": [
+              "Jan",
+              "Feb",
+              "Mar"
+            ],
+            "row_dimensions": [
+              "Product"
+            ],
             "output_table": "essbase_builder_columns"
           }
         }
@@ -311,7 +330,7 @@
   },
   {
     "name": "12_run_essbase_builder_multi_rows",
-    "description": "Builder mode with multiple row dimensions: row_dimensions=[Product, Market] — component generates CrossJoin({[Product].Members},{[Market].Members}) ON ROWS",
+    "description": "Builder mode with multiple row dimensions: row_dimensions=[Product, Market] \u2014 component generates CrossJoin({[Product].Members},{[Market].Members}) ON ROWS",
     "config": {
       "action": "run",
       "parameters": {
@@ -320,7 +339,8 @@
         "#password": "DUMMY_PASSWORD",
         "essbase_host": "34.31.58.133",
         "essbase_port": 9010,
-        "ssl_verify": false
+        "ssl_verify": false,
+        "use_ssl": false
       },
       "config_rows": [
         {
@@ -332,8 +352,15 @@
             "database": "Basic",
             "query_mode": "builder",
             "column_dimension": "Year",
-            "column_members": ["Jan", "Feb", "Mar"],
-            "row_dimensions": ["Product", "Market"],
+            "column_members": [
+              "Jan",
+              "Feb",
+              "Mar"
+            ],
+            "row_dimensions": [
+              "Product",
+              "Market"
+            ],
             "output_table": "essbase_builder_multi_rows"
           }
         }
