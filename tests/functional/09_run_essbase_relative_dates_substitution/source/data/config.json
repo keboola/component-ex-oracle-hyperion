@@ -1,0 +1,27 @@
+{
+  "action": "run",
+  "parameters": {
+    "hyperion_url": "http://34.31.58.133:9000",
+    "username": "admin",
+    "#password": "DUMMY_PASSWORD",
+    "essbase_host": "34.31.58.133",
+    "essbase_port": 9010,
+    "ssl_verify": false
+  },
+  "config_rows": [
+    {
+      "id": "row-relative-dates",
+      "is_disabled": false,
+      "parameters": {
+        "module": "essbase",
+        "application": "Sample",
+        "database": "Basic",
+        "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
+        "output_table": "essbase_relative_dates",
+        "since": "5 days ago",
+        "until": "now",
+        "incremental": true
+      }
+    }
+  ]
+}

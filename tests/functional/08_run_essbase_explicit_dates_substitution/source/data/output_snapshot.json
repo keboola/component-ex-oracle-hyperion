@@ -1,0 +1,41 @@
+{
+  "files": {},
+  "hash_algorithm": "sha256",
+  "tables": {
+    "essbase_builder.csv": {
+      "columns": [
+        "Product",
+        "Jan",
+        "Feb",
+        "Mar"
+      ],
+      "hash": "sha256:481628e6cfc3d7970f2a971ece1e839b17c895b1f3caca3b6de302079127987c",
+      "row_count": 23,
+      "size_bytes": 603
+    },
+    "essbase_builder.csv.manifest": {
+      "columns": null,
+      "hash": "sha256:7a11e3d6cf321073a89c589a23080dd39020efee57b2936ff58ed1049cbd7ffb",
+      "row_count": null,
+      "size_bytes": 141
+    },
+    "essbase_explicit_dates.csv": {
+      "columns": [
+        "Product",
+        "Jan",
+        "Feb",
+        "Mar"
+      ],
+      "hash": "sha256:be29cc5a177db76a4cee7fef9ccaba211a78fb7e4748227cd1b9d8c155564b2a",
+      "row_count": 2,
+      "size_bytes": 50
+    },
+    "essbase_explicit_dates.csv.manifest": {
+      "columns": null,
+      "hash": "sha256:bedaab844e73690334566cfd3c80332dbb17b68ade5abea7a3e223873c4effb5",
+      "row_count": null,
+      "size_bytes": 140
+    }
+  },
+  "version": "1.0"
+}

@@ -1,0 +1,26 @@
+{
+  "files": {},
+  "hash_algorithm": "sha256",
+  "tables": {
+    "essbase_builder_multi_rows.csv": {
+      "columns": [
+        "Product",
+        "Market",
+        "",
+        "Jan",
+        "Feb",
+        "Mar"
+      ],
+      "hash": "sha256:7cd5e32fcd7142ea04bf246e7c62f1b4f10fcdfff68beca2d9db0ff610c3e3b4",
+      "row_count": 551,
+      "size_bytes": 19512
+    },
+    "essbase_builder_multi_rows.csv.manifest": {
+      "columns": null,
+      "hash": "sha256:7a11e3d6cf321073a89c589a23080dd39020efee57b2936ff58ed1049cbd7ffb",
+      "row_count": null,
+      "size_bytes": 141
+    }
+  },
+  "version": "1.0"
+}
