@@ -45,6 +45,13 @@ class RowConfiguration(BaseModel):
     mdx_query: str = ""  # MDX SELECT statement for Essbase
     plan_type: str = ""  # Planning plan type for data export
     output_table: str
+    incremental: bool = False
+    since: str = ""
+    until: str = ""
+    query_mode: Literal["custom", "builder"] = "custom"
+    column_dimension: str = ""
+    column_members: list[str] = []
+    row_dimensions: list[str] = []
 
     model_config = {"populate_by_name": True}
 
@@ -60,3 +67,9 @@ class RowConfiguration(BaseModel):
 
         if self.module == "planning" and not self.plan_type:
             raise UserException("'plan_type' is required for the Planning module.")
+
+        if self.query_mode == "builder" and self.module == "essbase" and not self.column_dimension:
+            raise UserException("'column_dimension' is required in builder mode.")
+
+        if self.query_mode == "builder" and self.module == "essbase" and not self.row_dimensions:
+            raise UserException("At least one 'row_dimensions' entry is required in builder mode.")

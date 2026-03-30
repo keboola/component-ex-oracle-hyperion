@@ -27,6 +27,16 @@ class EssbaseClient:
     def get_databases(self, application: str) -> list[dict]:
         return self._get(f"/applications/{application}/databases").get("items", [])
 
+    def get_dimensions(self, application: str, database: str) -> list[dict]:
+        """Lists cube dimensions."""
+        return self._get(f"/applications/{application}/databases/{database}/dimensions").get("items", [])
+
+    def get_members(self, application: str, database: str, dimension: str) -> list[dict]:
+        """Lists members for a dimension."""
+        return self._get(f"/applications/{application}/databases/{database}/dimensions/{dimension}/members").get(
+            "items", []
+        )
+
     def execute_mdx(self, application: str, database: str, mdx: str) -> dict:
         """Execute an MDX query and return the raw grid response."""
         payload = {"query": mdx}
