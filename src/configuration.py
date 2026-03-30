@@ -51,9 +51,6 @@ class Configuration(BaseModel):
         if self.debug:
             logging.getLogger().setLevel(logging.DEBUG)
 
-        if self.module is not None:
-            self._validate_row()
-
     def _validate_row(self) -> None:
         if self.module == "essbase" and not self.database:
             raise UserException("'database' (cube name) is required for the Essbase module.")

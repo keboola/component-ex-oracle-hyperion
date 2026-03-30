@@ -33,6 +33,7 @@ class Component(ComponentBase):
         planning_client = None
 
         for row_params in rows_to_process:
+            row_params._validate_row()
             logging.info(f"Processing: module={row_params.module}, app={row_params.application}")
 
             if row_params.module == "essbase":
