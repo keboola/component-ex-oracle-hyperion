@@ -269,9 +269,13 @@ class Component(ComponentBase):
         incremental: bool = False,
         primary_key: list[str] | None = None,
     ) -> None:
-        schema = self._build_schema(columns, rows, primary_key or [])
+        schema = self._build_schema(columns, primary_key or [], rows)
         table = self.create_out_table_definition(
-            f"{table_name}.csv", incremental=incremental, schema=schema, primary_key=primary_key or []
+            f"{table_name}.csv",
+            incremental=incremental,
+            schema=schema,
+            primary_key=primary_key or [],
+            has_header=True,
         )
         with open(table.full_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore")
@@ -280,18 +284,25 @@ class Component(ComponentBase):
         self.write_manifest(table)
 
     @staticmethod
-    def _build_schema(columns: list[str], rows: list[dict], primary_key: list[str]) -> dict[str, ColumnDefinition]:
-        """Infer column types from the first data row. Numeric Python values → NUMERIC, everything else → STRING."""
-        sample = rows[0] if rows else {}
+    def _build_schema(columns: list[str], primary_key: list[str], rows: list[dict]) -> dict[str, ColumnDefinition]:
+        """Infer column types from the first non-empty data row.
+        The Essbase API serialises numbers as JSON strings, so we attempt float() conversion."""
         pk_set = set(primary_key)
+        sample = next((r for r in rows if any(r.values())), {})
         schema = {}
         for col in columns:
             val = sample.get(col)
-            if isinstance(val, (int, float)):
-                base = BaseType(dtype=SupportedDataTypes.NUMERIC)
-            else:
-                base = BaseType(dtype=SupportedDataTypes.STRING)
-            schema[col] = ColumnDefinition(data_types=base, nullable=True, primary_key=col in pk_set)
+            try:
+                float(val)
+                is_numeric = True
+            except (TypeError, ValueError):
+                is_numeric = False
+            dtype = SupportedDataTypes.NUMERIC if is_numeric else SupportedDataTypes.STRING
+            schema[col] = ColumnDefinition(
+                data_types=BaseType(dtype=dtype),
+                nullable=True,
+                primary_key=col in pk_set,
+            )
         return schema
 
 

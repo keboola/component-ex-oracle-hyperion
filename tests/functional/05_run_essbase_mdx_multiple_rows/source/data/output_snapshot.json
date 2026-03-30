@@ -15,9 +15,9 @@
     },
     "essbase_cola.csv.manifest": {
       "columns": null,
-      "hash": "sha256:eea697813985bf5700e2882fa1e270dab4a133cee26bf93a82367647df5593c5",
+      "hash": "sha256:7991c68070da091a60685a7d2908cfb270692e0a6591c5829e1cb98ad13f6116",
       "row_count": null,
-      "size_bytes": 759
+      "size_bytes": 761
     },
     "essbase_root_beer.csv": {
       "columns": [
@@ -32,9 +32,9 @@
     },
     "essbase_root_beer.csv.manifest": {
       "columns": null,
-      "hash": "sha256:eea697813985bf5700e2882fa1e270dab4a133cee26bf93a82367647df5593c5",
+      "hash": "sha256:01fe34c7d3f3dccfa398ad4c032f5ff5ba6c92a1fb0c5d5e1565114fe6bb34b4",
       "row_count": null,
-      "size_bytes": 759
+      "size_bytes": 762
     }
   },
   "version": "1.0"

@@ -4,7 +4,7 @@
   "delimiter": ",",
   "enclosure": "\"",
   "manifest_type": "out",
-  "has_header": false,
+  "has_header": true,
   "schema": [
     {
       "name": "Product",
@@ -20,7 +20,7 @@
       "name": "Apr",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -29,7 +29,7 @@
       "name": "May",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -38,7 +38,7 @@
       "name": "Jun",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true

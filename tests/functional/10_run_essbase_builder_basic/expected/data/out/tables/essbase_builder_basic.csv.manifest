@@ -4,7 +4,7 @@
   "delimiter": ",",
   "enclosure": "\"",
   "manifest_type": "out",
-  "has_header": false,
+  "has_header": true,
   "schema": [
     {
       "name": "Product",
@@ -20,7 +20,7 @@
       "name": "Year",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -29,7 +29,7 @@
       "name": "Qtr1",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -38,7 +38,7 @@
       "name": "Jan",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -47,7 +47,7 @@
       "name": "Feb",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -56,7 +56,7 @@
       "name": "Mar",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -65,7 +65,7 @@
       "name": "Qtr2",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -74,7 +74,7 @@
       "name": "Apr",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -83,7 +83,7 @@
       "name": "May",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -92,7 +92,7 @@
       "name": "Jun",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -101,7 +101,7 @@
       "name": "Qtr3",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -110,7 +110,7 @@
       "name": "Jul",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -119,7 +119,7 @@
       "name": "Aug",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -128,7 +128,7 @@
       "name": "Sep",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -137,7 +137,7 @@
       "name": "Qtr4",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -146,7 +146,7 @@
       "name": "Oct",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -155,7 +155,7 @@
       "name": "Nov",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
@@ -164,7 +164,7 @@
       "name": "Dec",
       "data_type": {
         "base": {
-          "type": "STRING"
+          "type": "NUMERIC"
         }
       },
       "nullable": true
