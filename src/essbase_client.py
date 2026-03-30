@@ -59,9 +59,14 @@ class EssbaseClient:
                 return resp.json()
             except requests.HTTPError as e:
                 if self._is_retryable(e) and attempt < _RETRY_ATTEMPTS - 1:
-                    delay = _RETRY_BACKOFF_BASE * (2 ** attempt)
-                    logging.warning("Essbase timeout on GET %s (attempt %d/%d), retrying in %ds…",
-                                    path, attempt + 1, _RETRY_ATTEMPTS, delay)
+                    delay = _RETRY_BACKOFF_BASE * (2**attempt)
+                    logging.warning(
+                        "Essbase timeout on GET %s (attempt %d/%d), retrying in %ds…",
+                        path,
+                        attempt + 1,
+                        _RETRY_ATTEMPTS,
+                        delay,
+                    )
                     time.sleep(delay)
                     last_exc = e
                     continue
@@ -82,9 +87,14 @@ class EssbaseClient:
                 return resp.json()
             except requests.HTTPError as e:
                 if self._is_retryable(e) and attempt < _RETRY_ATTEMPTS - 1:
-                    delay = _RETRY_BACKOFF_BASE * (2 ** attempt)
-                    logging.warning("Essbase timeout on POST %s (attempt %d/%d), retrying in %ds…",
-                                    path, attempt + 1, _RETRY_ATTEMPTS, delay)
+                    delay = _RETRY_BACKOFF_BASE * (2**attempt)
+                    logging.warning(
+                        "Essbase timeout on POST %s (attempt %d/%d), retrying in %ds…",
+                        path,
+                        attempt + 1,
+                        _RETRY_ATTEMPTS,
+                        delay,
+                    )
                     time.sleep(delay)
                     last_exc = e
                     continue
