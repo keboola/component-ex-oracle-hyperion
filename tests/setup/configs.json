@@ -16,23 +16,6 @@
     }
   },
   {
-    "name": "02_listDatabases_no_app",
-    "description": "listDatabases without application set — expects a WARNING validation result",
-    "config": {
-      "action": "listDatabases",
-      "parameters": {
-        "hyperion_url": "http://34.31.58.133:9000",
-        "username": "admin",
-        "#password": "DUMMY_PASSWORD",
-        "essbase_host": "34.31.58.133",
-        "essbase_port": 9010,
-        "ssl_verify": false,
-        "use_ssl": false,
-        "module": "essbase"
-      }
-    }
-  },
-  {
     "name": "03_listDatabases_with_app",
     "description": "listDatabases for Sample application — returns Basic cube",
     "config": {
@@ -45,8 +28,10 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample"
+        "source": {
+          "module": "essbase",
+          "application": "Sample"
+        }
       }
     }
   },
@@ -63,11 +48,15 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola],[Root Beer]} ON ROWS FROM [Sample.Basic]",
-        "output_table": "essbase_sample_basic"
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola],[Root Beer]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_sample_basic"
+        }
       }
     }
   },
@@ -84,11 +73,15 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
-        "output_table": "essbase_cola"
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_cola"
+        }
       }
     }
   },
@@ -105,11 +98,15 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Root Beer]} ON ROWS FROM [Sample.Basic]",
-        "output_table": "essbase_root_beer"
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Root Beer]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_root_beer"
+        }
       }
     }
   },
@@ -126,12 +123,16 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[100-10]} ON ROWS FROM [Sample.Basic]",
-        "output_table": "essbase_incremental",
-        "incremental": true
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[100-10]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_incremental",
+          "incremental": true
+        }
       }
     }
   },
@@ -148,14 +149,18 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
-        "output_table": "essbase_explicit_dates",
-        "since": "2024-01-01",
-        "until": "2024-03-31",
-        "incremental": true
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_explicit_dates",
+          "since": "2024-01-01",
+          "until": "2024-03-31",
+          "incremental": true
+        }
       }
     }
   },
@@ -172,14 +177,18 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]",
-        "output_table": "essbase_relative_dates",
-        "since": "5 days ago",
-        "until": "now",
-        "incremental": true
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_relative_dates",
+          "since": "5 days ago",
+          "until": "now",
+          "incremental": true
+        }
       }
     }
   },
@@ -196,13 +205,17 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "query_mode": "builder",
-        "column_dimension": "Year",
-        "row_dimensions": ["Product"],
-        "output_table": "essbase_builder_basic"
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "query_mode": "builder",
+          "column_dimension": "Year",
+          "row_dimensions": ["Product"]
+        },
+        "destination": {
+          "output_table": "essbase_builder_basic"
+        }
       }
     }
   },
@@ -219,14 +232,18 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "query_mode": "builder",
-        "column_dimension": "Year",
-        "column_members": ["Jan", "Feb", "Mar"],
-        "row_dimensions": ["Product"],
-        "output_table": "essbase_builder_columns"
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "query_mode": "builder",
+          "column_dimension": "Year",
+          "column_members": ["Jan", "Feb", "Mar"],
+          "row_dimensions": ["Product"]
+        },
+        "destination": {
+          "output_table": "essbase_builder_columns"
+        }
       }
     }
   },
@@ -243,14 +260,18 @@
         "essbase_port": 9010,
         "ssl_verify": false,
         "use_ssl": false,
-        "module": "essbase",
-        "application": "Sample",
-        "database": "Basic",
-        "query_mode": "builder",
-        "column_dimension": "Year",
-        "column_members": ["Jan", "Feb", "Mar"],
-        "row_dimensions": ["Product", "Market"],
-        "output_table": "essbase_builder_multi_rows"
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "query_mode": "builder",
+          "column_dimension": "Year",
+          "column_members": ["Jan", "Feb", "Mar"],
+          "row_dimensions": ["Product", "Market"]
+        },
+        "destination": {
+          "output_table": "essbase_builder_multi_rows"
+        }
       }
     }
   }

@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.dao import BaseType, ColumnDefinition, SupportedDataTypes
 from keboola.component.exceptions import UserException
-from keboola.component.sync_actions import MessageType, SelectElement, ValidationResult
+from keboola.component.sync_actions import SelectElement
 from keboola.utils.date import get_past_date, parse_datetime_interval
 
 from configuration import Configuration
@@ -27,26 +27,18 @@ class Component(ComponentBase):
         self.params = Configuration(**self.configuration.parameters)
 
     def run(self):
-        rows_to_process = [self.params]
+        self.params._validate_row()
+        logging.info(f"Processing: module={self.params.module}, app={self.params.application}")
 
-        essbase_client = None
-        planning_client = None
+        if self.params.module == "essbase":
+            essbase_client = self._build_essbase_client(self.params)
+            version = essbase_client.verify_connection()
+            logging.info(f"Connected to Essbase version: {version}")
+            self._extract_essbase(essbase_client, self.params)
 
-        for row_params in rows_to_process:
-            row_params._validate_row()
-            logging.info(f"Processing: module={row_params.module}, app={row_params.application}")
-
-            if row_params.module == "essbase":
-                if essbase_client is None:
-                    essbase_client = self._build_essbase_client(self.params)
-                    version = essbase_client.verify_connection()
-                    logging.info(f"Connected to Essbase version: {version}")
-                self._extract_essbase(essbase_client, row_params)
-
-            elif row_params.module == "planning":
-                if planning_client is None:
-                    planning_client = self._build_planning_client(self.params)
-                self._extract_planning(planning_client, row_params)
+        elif self.params.module == "planning":
+            planning_client = self._build_planning_client(self.params)
+            self._extract_planning(planning_client, self.params)
 
     @sync_action("listApplications")
     def list_applications(self) -> list[SelectElement]:
@@ -64,49 +56,41 @@ class Component(ComponentBase):
         return self.configuration.parameters
 
     @sync_action("listDatabases")
-    def list_databases(self) -> list[SelectElement] | ValidationResult:
+    def list_databases(self) -> list[SelectElement]:
         """Return databases for a given application."""
-        application = self._row_params().get("application", "")
+        source = self._row_params().get("source", {})
+        application = source.get("application", "")
         if not application:
-            return ValidationResult(
-                "Select or enter an Application name first, then reload databases.",
-                MessageType.WARNING,
-            )
+            raise UserException("Select or enter an Application name first, then reload databases.")
 
         client = self._build_essbase_client(self.params)
         databases = client.get_databases(application)
         return [SelectElement(value=db["name"], label=db.get("alias") or db["name"]) for db in databases]
 
     @sync_action("loadTables")
-    def load_tables(self) -> list[SelectElement] | ValidationResult:
+    def load_tables(self) -> list[SelectElement]:
         """Return cube dimensions for the selected application/database."""
-        params = self._row_params()
-        application = params.get("application", "")
-        database = params.get("database", "")
+        source = self._row_params().get("source", {})
+        application = source.get("application", "")
+        database = source.get("database", "")
 
         if not application or not database:
-            return ValidationResult(
-                "Select an Application and Database first, then reload tables.",
-                MessageType.WARNING,
-            )
+            raise UserException("Select an Application and Database first, then reload tables.")
 
         client = self._build_essbase_client(self.params)
         dimensions = client.get_dimensions(application, database)
         return [SelectElement(value=d["name"], label=d.get("alias") or d["name"]) for d in dimensions]
 
     @sync_action("loadFields")
-    def load_fields(self) -> list[SelectElement] | ValidationResult:
+    def load_fields(self) -> list[SelectElement]:
         """Return members for the selected column dimension."""
-        params = self._row_params()
-        application = params.get("application", "")
-        database = params.get("database", "")
-        dimension = params.get("column_dimension", "")
+        source = self._row_params().get("source", {})
+        application = source.get("application", "")
+        database = source.get("database", "")
+        dimension = source.get("column_dimension", "")
 
         if not application or not database or not dimension:
-            return ValidationResult(
-                "Select an Application, Database, and Column Dimension first, then reload fields.",
-                MessageType.WARNING,
-            )
+            raise UserException("Select an Application, Database, and Column Dimension first, then reload fields.")
 
         client = self._build_essbase_client(self.params)
         members = client.get_members(application, database, dimension)

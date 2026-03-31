@@ -8,19 +8,23 @@
     "essbase_port": 9010,
     "ssl_verify": false,
     "use_ssl": false,
-    "module": "essbase",
-    "application": "Sample",
-    "database": "Basic",
-    "query_mode": "builder",
-    "column_dimension": "Year",
-    "column_members": [
-      "Jan",
-      "Feb",
-      "Mar"
-    ],
-    "row_dimensions": [
-      "Product"
-    ],
-    "output_table": "essbase_builder_columns"
+    "source": {
+      "module": "essbase",
+      "application": "Sample",
+      "database": "Basic",
+      "query_mode": "builder",
+      "column_dimension": "Year",
+      "column_members": [
+        "Jan",
+        "Feb",
+        "Mar"
+      ],
+      "row_dimensions": [
+        "Product"
+      ]
+    },
+    "destination": {
+      "output_table": "essbase_builder_columns"
+    }
   }
 }

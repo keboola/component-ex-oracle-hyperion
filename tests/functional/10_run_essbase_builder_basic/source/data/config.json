@@ -8,14 +8,18 @@
     "essbase_port": 9010,
     "ssl_verify": false,
     "use_ssl": false,
-    "module": "essbase",
-    "application": "Sample",
-    "database": "Basic",
-    "query_mode": "builder",
-    "column_dimension": "Year",
-    "row_dimensions": [
-      "Product"
-    ],
-    "output_table": "essbase_builder_basic"
+    "source": {
+      "module": "essbase",
+      "application": "Sample",
+      "database": "Basic",
+      "query_mode": "builder",
+      "column_dimension": "Year",
+      "row_dimensions": [
+        "Product"
+      ]
+    },
+    "destination": {
+      "output_table": "essbase_builder_basic"
+    }
   }
 }

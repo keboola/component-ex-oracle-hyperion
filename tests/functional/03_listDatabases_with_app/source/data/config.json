@@ -8,7 +8,9 @@
     "essbase_port": 9010,
     "ssl_verify": false,
     "use_ssl": false,
-    "module": "essbase",
-    "application": "Sample"
+    "source": {
+      "module": "essbase",
+      "application": "Sample"
+    }
   }
 }

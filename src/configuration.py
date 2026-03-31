@@ -3,7 +3,7 @@ from typing import Literal
 from urllib.parse import urlparse
 
 from keboola.component.exceptions import UserException
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, model_validator
 
 
 class Configuration(BaseModel):
@@ -40,6 +40,22 @@ class Configuration(BaseModel):
     row_dimensions: list[str] = Field(default_factory=list)
 
     model_config = {"populate_by_name": True, "extra": "ignore"}
+
+    @model_validator(mode="before")
+    @classmethod
+    def _flatten_nested(cls, data: dict) -> dict:
+        """Flatten nested 'source' and 'destination' dicts into top-level params.
+
+        The UI schema groups row-level params under 'source' (query settings) and
+        'destination' (output settings). This validator merges them back into the flat
+        structure that the rest of the component expects.
+        """
+        if isinstance(data, dict):
+            data = dict(data)
+            for key in ("source", "destination"):
+                if key in data and isinstance(data[key], dict):
+                    data.update(data.pop(key))
+        return data
 
     def __init__(self, **data):
         try:
