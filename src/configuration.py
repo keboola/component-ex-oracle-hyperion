@@ -1,20 +1,48 @@
-import logging
-from typing import Literal
+from enum import StrEnum
 from urllib.parse import urlparse
 
 from keboola.component.exceptions import UserException
-from pydantic import BaseModel, Field, ValidationError, model_validator
+from pydantic import BaseModel, Field, ValidationError
+
+
+class Module(StrEnum):
+    ESSBASE = "essbase"
+    PLANNING = "planning"
+
+
+class QueryMode(StrEnum):
+    CUSTOM = "custom"
+    BUILDER = "builder"
+
+
+class SourceConfig(BaseModel):
+    """Row-level source parameters — maps to the 'source' block in configRowSchema."""
+
+    module: Module | None = None
+    application: str = ""
+    database: str = ""
+    mdx_query: str = ""
+    plan_type: str = ""
+    query_mode: QueryMode = QueryMode.CUSTOM
+    column_dimension: str = ""
+    column_members: list[str] = Field(default_factory=list)
+    row_dimensions: list[str] = Field(default_factory=list)
+
+
+class DestinationConfig(BaseModel):
+    """Row-level destination parameters — maps to the 'destination' block in configRowSchema."""
+
+    output_table: str = ""
+    incremental: bool = False
+    since: str = ""
+    until: str = ""
 
 
 class Configuration(BaseModel):
-    """Component configuration — connection settings merged with row-level extraction parameters.
+    """Root configuration — connection settings from configSchema merged with
+    source/destination row settings from configRowSchema."""
 
-    The Keboola platform merges root-level (connection) and row-level parameters into a single
-    flat parameters dict before calling the component. Both run actions and sync actions receive
-    this merged dict.
-    """
-
-    # --- Connection (root-level, always required) ---
+    # --- Connection (configSchema, always required) ---
     hyperion_url: str
     username: str
     password: str = Field(alias="#password")
@@ -22,40 +50,12 @@ class Configuration(BaseModel):
     essbase_port: int = 9010
     use_ssl: bool = True
     ssl_verify: bool = True
-    debug: bool = False
 
-    # --- Extraction (row-level, required for run actions) ---
-    module: Literal["essbase", "planning"] | None = None
-    application: str = ""
-    database: str = ""
-    mdx_query: str = ""
-    plan_type: str = ""
-    output_table: str = ""
-    incremental: bool = False
-    since: str = ""
-    until: str = ""
-    query_mode: Literal["custom", "builder"] = "custom"
-    column_dimension: str = ""
-    column_members: list[str] = Field(default_factory=list)
-    row_dimensions: list[str] = Field(default_factory=list)
+    # --- Extraction (configRowSchema) ---
+    source: SourceConfig = Field(default_factory=SourceConfig)
+    destination: DestinationConfig = Field(default_factory=DestinationConfig)
 
     model_config = {"populate_by_name": True, "extra": "ignore"}
-
-    @model_validator(mode="before")
-    @classmethod
-    def _flatten_nested(cls, data: dict) -> dict:
-        """Flatten nested 'source' and 'destination' dicts into top-level params.
-
-        The UI schema groups row-level params under 'source' (query settings) and
-        'destination' (output settings). This validator merges them back into the flat
-        structure that the rest of the component expects.
-        """
-        if isinstance(data, dict):
-            data = dict(data)
-            for key in ("source", "destination"):
-                if key in data and isinstance(data[key], dict):
-                    data.update(data.pop(key))
-        return data
 
     def __init__(self, **data):
         try:
@@ -64,26 +64,22 @@ class Configuration(BaseModel):
             error_messages = [f"{'.'.join(str(loc) for loc in err['loc'])}: {err['msg']}" for err in e.errors()]
             raise UserException(f"Configuration error: {', '.join(error_messages)}")
 
-        if self.debug:
-            logging.getLogger().setLevel(logging.DEBUG)
-
     def _validate_row(self) -> None:
-        if self.module == "essbase" and not self.database:
+        if self.source.module == Module.ESSBASE and not self.source.database:
             raise UserException("'database' (cube name) is required for the Essbase module.")
 
-        if self.module == "planning" and not self.plan_type:
+        if self.source.module == Module.PLANNING and not self.source.plan_type:
             raise UserException("'plan_type' is required for the Planning module.")
 
-        if self.query_mode == "builder" and self.module == "essbase" and not self.column_dimension:
-            raise UserException("'column_dimension' is required in builder mode.")
-
-        if self.query_mode == "builder" and self.module == "essbase" and not self.row_dimensions:
-            raise UserException("At least one 'row_dimensions' entry is required in builder mode.")
-
-        if self.query_mode == "builder" and self.module == "essbase" and self.column_dimension in self.row_dimensions:
-            raise UserException(
-                f"'column_dimension' ({self.column_dimension!r}) must not also appear in 'row_dimensions'."
-            )
+        if self.source.query_mode == QueryMode.BUILDER and self.source.module == Module.ESSBASE:
+            if not self.source.column_dimension:
+                raise UserException("'column_dimension' is required in builder mode.")
+            if not self.source.row_dimensions:
+                raise UserException("At least one 'row_dimensions' entry is required in builder mode.")
+            if self.source.column_dimension in self.source.row_dimensions:
+                raise UserException(
+                    f"'column_dimension' ({self.source.column_dimension!r}) must not also appear in 'row_dimensions'."
+                )
 
     def get_essbase_host(self) -> str:
         """Return Essbase host — falls back to Hyperion URL host if not set."""

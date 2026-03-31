@@ -16,7 +16,7 @@ from keboola.component.exceptions import UserException
 from keboola.component.sync_actions import SelectElement
 from keboola.utils.date import get_past_date, parse_datetime_interval
 
-from configuration import Configuration
+from configuration import Configuration, Module, QueryMode
 from essbase_client import EssbaseClient, mdx_response_to_rows
 from planning_client import PlanningClient, planning_export_to_rows
 
@@ -28,15 +28,15 @@ class Component(ComponentBase):
 
     def run(self):
         self.params._validate_row()
-        logging.info(f"Processing: module={self.params.module}, app={self.params.application}")
+        logging.info(f"Processing: module={self.params.source.module}, app={self.params.source.application}")
 
-        if self.params.module == "essbase":
+        if self.params.source.module == Module.ESSBASE:
             essbase_client = self._build_essbase_client(self.params)
             version = essbase_client.verify_connection()
             logging.info(f"Connected to Essbase version: {version}")
             self._extract_essbase(essbase_client, self.params)
 
-        elif self.params.module == "planning":
+        elif self.params.source.module == Module.PLANNING:
             planning_client = self._build_planning_client(self.params)
             self._extract_planning(planning_client, self.params)
 
@@ -119,20 +119,19 @@ class Component(ComponentBase):
 
     def _resolve_dates(self, row: Configuration) -> tuple[str | None, str | None]:
         """Resolve since/until to YYYY-MM-DD strings. Returns (None, None) if no dates configured."""
-        has_since = bool(row.since)
-        has_until = bool(row.until)
-        if not has_since and not has_until and not row.incremental:
+        dest = row.destination
+        if not dest.since and not dest.until and not dest.incremental:
             return None, None
 
         # Determine effective since
-        effective_since = row.since
-        if not effective_since and row.incremental:
+        effective_since = dest.since
+        if not effective_since and dest.incremental:
             state = self.get_state_file()
-            effective_since = state.get(row.output_table, {}).get("last_run", "")
+            effective_since = state.get(dest.output_table, {}).get("last_run", "")
 
         if effective_since:
             try:
-                since_dt, until_dt = parse_datetime_interval(effective_since, row.until or "now")
+                since_dt, until_dt = parse_datetime_interval(effective_since, dest.until or "now")
             except Exception as e:
                 raise UserException(
                     f"Invalid date format in 'since' or 'until': {e}. "
@@ -141,7 +140,7 @@ class Component(ComponentBase):
             since_str: str | None = since_dt.strftime("%Y-%m-%d")
         else:
             since_str = None
-            until_dt = get_past_date(row.until) if row.until else datetime.now(UTC)
+            until_dt = get_past_date(dest.until) if dest.until else datetime.now(UTC)
 
         until_str: str | None = until_dt.strftime("%Y-%m-%d")
         return since_str, until_str
@@ -163,22 +162,23 @@ class Component(ComponentBase):
 
     def _build_mdx_query(self, row: Configuration) -> str:
         """Build MDX SELECT statement from builder-mode fields."""
-        app_db = f"{row.application}.{row.database}"
+        src = row.source
+        app_db = f"{src.application}.{src.database}"
 
         # COLUMNS clause
-        if row.column_members:
-            col_set = "{" + ",".join(f"[{row.column_dimension}].[{m}]" for m in row.column_members) + "}"
+        if src.column_members:
+            col_set = "{" + ",".join(f"[{src.column_dimension}].[{m}]" for m in src.column_members) + "}"
         else:
-            col_set = f"{{[{row.column_dimension}].Members}}"
+            col_set = f"{{[{src.column_dimension}].Members}}"
 
         # ROWS clause
         def dim_set(dim: str) -> str:
             return f"{{[{dim}].Members}}"
 
-        if len(row.row_dimensions) == 1:
-            rows_clause = dim_set(row.row_dimensions[0])
+        if len(src.row_dimensions) == 1:
+            rows_clause = dim_set(src.row_dimensions[0])
         else:
-            sets = [dim_set(d) for d in row.row_dimensions]
+            sets = [dim_set(d) for d in src.row_dimensions]
             rows_clause = sets[0]
             for s in sets[1:]:
                 rows_clause = f"CrossJoin({rows_clause},{s})"
@@ -186,51 +186,54 @@ class Component(ComponentBase):
         return f"SELECT\n  {col_set} ON COLUMNS,\n  {rows_clause} ON ROWS\nFROM [{app_db}]"
 
     def _extract_essbase(self, client: EssbaseClient, row: Configuration) -> None:
+        src, dest = row.source, row.destination
+
         # Determine query
-        if row.query_mode == "builder":
+        if src.query_mode == QueryMode.BUILDER:
             mdx = self._build_mdx_query(row)
             logging.info(f"Builder mode — generated MDX:\n{mdx}")
         else:
-            if not row.mdx_query:
+            if not src.mdx_query:
                 raise UserException(
-                    f"Row '{row.output_table}': 'mdx_query' is required for Essbase extraction in custom mode."
+                    f"Row '{dest.output_table}': 'mdx_query' is required for Essbase extraction in custom mode."
                 )
-            mdx = row.mdx_query
+            mdx = src.mdx_query
 
         # Substitute date placeholders
         since_str, until_str = self._resolve_dates(row)
         mdx = self._substitute_dates(mdx, since_str, until_str)
 
-        logging.info(f"Executing MDX on {row.application}/{row.database} -> {row.output_table}")
-        response = client.execute_mdx(row.application, row.database, mdx)
+        logging.info(f"Executing MDX on {src.application}/{src.database} -> {dest.output_table}")
+        response = client.execute_mdx(src.application, src.database, mdx)
 
         columns, data_rows, pk_columns = mdx_response_to_rows(response)
         if not columns:
-            logging.warning(f"MDX query returned no data for {row.application}/{row.database}.")
+            logging.warning(f"MDX query returned no data for {src.application}/{src.database}.")
             return
 
-        self._write_table(row.output_table, columns, data_rows, incremental=row.incremental, primary_key=pk_columns)
-        logging.info(f"Written {len(data_rows)} rows to '{row.output_table}'.")
+        self._write_table(dest.output_table, columns, data_rows, incremental=dest.incremental, primary_key=pk_columns)
+        logging.info(f"Written {len(data_rows)} rows to '{dest.output_table}'.")
 
-        if row.incremental and until_str:
-            self._save_state(row.output_table, until_str)
+        if dest.incremental and until_str:
+            self._save_state(dest.output_table, until_str)
 
     def _extract_planning(self, client: PlanningClient, row: Configuration) -> None:
-        logging.info(f"Exporting data slice from {row.application}/{row.plan_type} -> {row.output_table}")
+        src, dest = row.source, row.destination
+        logging.info(f"Exporting data slice from {src.application}/{src.plan_type} -> {dest.output_table}")
 
         payload: dict = {}
-        if row.mdx_query:
-            payload["query"] = row.mdx_query
+        if src.mdx_query:
+            payload["query"] = src.mdx_query
 
-        response = client.export_data_slice(row.application, row.plan_type, payload)
+        response = client.export_data_slice(src.application, src.plan_type, payload)
         columns, data_rows = planning_export_to_rows(response)
 
         if not columns:
-            logging.warning(f"Planning export returned no data for {row.application}/{row.plan_type}.")
+            logging.warning(f"Planning export returned no data for {src.application}/{src.plan_type}.")
             return
 
-        self._write_table(row.output_table, columns, data_rows)
-        logging.info(f"Written {len(data_rows)} rows to '{row.output_table}'.")
+        self._write_table(dest.output_table, columns, data_rows)
+        logging.info(f"Written {len(data_rows)} rows to '{dest.output_table}'.")
 
     def _write_table(
         self,

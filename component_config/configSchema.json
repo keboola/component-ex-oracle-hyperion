@@ -48,11 +48,5 @@
       "default": true,
       "propertyOrder": 7
     },
-    "debug": {
-      "type": "boolean",
-      "title": "Debug Mode",
-      "default": false,
-      "propertyOrder": 8
-    }
   }
 }
