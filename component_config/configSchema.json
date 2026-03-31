@@ -47,6 +47,12 @@
       "description": "Verify the server's SSL certificate. Disable only for self-signed certificates.",
       "default": true,
       "propertyOrder": 7
-    },
-  }
+    }
+  },
+  "syncActions": [
+    {
+      "name": "testConnection",
+      "label": "Test Connection"
+    }
+  ]
 }

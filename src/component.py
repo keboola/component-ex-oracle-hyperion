@@ -40,6 +40,13 @@ class Component(ComponentBase):
             planning_client = self._build_planning_client(self.params)
             self._extract_planning(planning_client, self.params)
 
+    @sync_action("testConnection")
+    def test_connection(self) -> None:
+        """Verify Essbase connectivity and surface a clear error on failure."""
+        client = self._build_essbase_client(self.params)
+        version = client.verify_connection()
+        logging.info(f"Connection OK — Essbase version: {version}")
+
     @sync_action("listApplications")
     def list_applications(self) -> list[SelectElement]:
         """Return all Essbase applications for UI dropdown."""
