@@ -1,0 +1,24 @@
+{
+  "files": {},
+  "hash_algorithm": "sha256",
+  "tables": {
+    "essbase_root_beer.csv": {
+      "columns": [
+        "Product",
+        "Jan",
+        "Feb",
+        "Mar"
+      ],
+      "hash": "sha256:d855be0ba44e08b773509e16ca332fc3fc54e2d5f85e1a077b82789c2d95a9a8",
+      "row_count": 2,
+      "size_bytes": 47
+    },
+    "essbase_root_beer.csv.manifest": {
+      "columns": null,
+      "hash": "sha256:01fe34c7d3f3dccfa398ad4c032f5ff5ba6c92a1fb0c5d5e1565114fe6bb34b4",
+      "row_count": null,
+      "size_bytes": 762
+    }
+  },
+  "version": "1.0"
+}

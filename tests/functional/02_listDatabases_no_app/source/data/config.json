@@ -1,0 +1,13 @@
+{
+  "action": "listDatabases",
+  "parameters": {
+    "hyperion_url": "http://34.31.58.133:9000",
+    "username": "admin",
+    "#password": "EPMHyperion1234",
+    "essbase_host": "34.31.58.133",
+    "essbase_port": 9010,
+    "ssl_verify": false,
+    "use_ssl": false,
+    "module": "essbase"
+  }
+}

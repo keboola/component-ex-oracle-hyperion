@@ -2,7 +2,7 @@
 name = "keboola-ex-oracle-hyperion"
 dynamic = ["version"]
 readme = "README.md"
-requires-python = "~=3.13"
+requires-python = "~=3.13.0"
 dependencies = [
     "keboola-component>=1.9.0",
     "keboola-utils>=1.1.0",
@@ -22,7 +22,7 @@ line-length = 120
 target-version = "py313"
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = ["I", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

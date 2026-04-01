@@ -2,7 +2,7 @@
   "parameters": {
     "hyperion_url": "http://hyperiondev:9000",
     "username": "admin",
-    "#password": "EPMHyperion1234",
+    "#password": "DUMMY_PASSWORD",
     "essbase_host": "10.0.0.4",
     "essbase_port": 9010,
     "ssl_verify": false,

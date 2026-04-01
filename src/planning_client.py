@@ -21,7 +21,7 @@ class PlanningClient:
     def _login(self, username: str, password: str) -> str:
         url = f"{self.base_url}/interop/logon"
         try:
-            resp = requests.post(
+            resp = self.session.post(
                 url,
                 json={"username": username, "password": password},
                 verify=self.ssl_verify,
@@ -29,9 +29,7 @@ class PlanningClient:
             )
             resp.raise_for_status()
         except requests.HTTPError as e:
-            raise UserException(
-                f"Planning authentication failed [{e.response.status_code}]: {e.response.text}"
-            ) from e
+            raise UserException(f"Planning authentication failed [{e.response.status_code}]: {e.response.text}") from e
         except requests.ConnectionError as e:
             raise UserException(f"Cannot connect to Planning server at {self.base_url}: {e}") from e
 
@@ -45,17 +43,8 @@ class PlanningClient:
     def get_applications(self) -> list[dict]:
         return self._get("/applications").get("items", [])
 
-    def get_dimensions(self, application: str) -> list[dict]:
-        return self._get(f"/applications/{application}/dimensions").get("items", [])
-
-    def get_members(self, application: str, dimension: str) -> list[dict]:
-        return self._get(f"/applications/{application}/dimensions/{dimension}/members").get("items", [])
-
     def export_data_slice(self, application: str, plan_type: str, payload: dict) -> dict:
         return self._post(f"/applications/{application}/plantypes/{plan_type}/exportdataslice", payload)
-
-    def get_substitution_variables(self, application: str) -> list[dict]:
-        return self._get(f"/applications/{application}/substitutionvariables").get("items", [])
 
     def _get(self, path: str) -> Any:
         url = f"{self.base_url}{self.API_PATH}{path}"
@@ -67,6 +56,8 @@ class PlanningClient:
             raise UserException(
                 f"Planning API error [{e.response.status_code}] on GET {path}: {e.response.text}"
             ) from e
+        except requests.ConnectionError as e:
+            raise UserException(f"Cannot connect to Planning server at {self.base_url}: {e}") from e
 
     def _post(self, path: str, payload: dict) -> Any:
         url = f"{self.base_url}{self.API_PATH}{path}"
@@ -78,6 +69,8 @@ class PlanningClient:
             raise UserException(
                 f"Planning API error [{e.response.status_code}] on POST {path}: {e.response.text}"
             ) from e
+        except requests.ConnectionError as e:
+            raise UserException(f"Cannot connect to Planning server at {self.base_url}: {e}") from e
 
 
 def planning_export_to_rows(export_response: dict) -> tuple[list[str], list[dict]]:

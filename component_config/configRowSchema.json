@@ -1,56 +1,209 @@
 {
   "type": "object",
   "title": "Extraction Row",
-  "required": ["module", "application", "output_table"],
+  "required": ["source", "destination"],
   "properties": {
-    "module": {
-      "type": "string",
-      "title": "Module",
-      "description": "Hyperion module to extract from",
-      "enum": ["essbase", "planning"],
-      "default": "essbase",
-      "propertyOrder": 1
-    },
-    "application": {
-      "type": "string",
-      "title": "Application",
-      "description": "Essbase application name or Planning application name",
-      "propertyOrder": 2
-    },
-    "database": {
-      "type": "string",
-      "title": "Database / Cube",
-      "description": "Essbase database (cube) name. Required for Essbase module.",
-      "propertyOrder": 3,
-      "options": {
-        "dependencies": {
-          "module": "essbase"
+    "source": {
+      "type": "object",
+      "title": "Source",
+      "format": "collapse",
+      "required": ["module", "application"],
+      "propertyOrder": 1,
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "Module",
+          "description": "Hyperion module to extract from",
+          "enum": ["essbase", "planning"],
+          "default": "essbase",
+          "propertyOrder": 1
+        },
+        "application": {
+          "type": "string",
+          "title": "Application",
+          "description": "Essbase application name or Planning application name",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 2,
+          "options": {
+            "tags": true,
+            "async": {
+              "label": "Load Applications",
+              "action": "listApplications",
+              "autoload": true
+            }
+          }
+        },
+        "database": {
+          "type": "string",
+          "title": "Database / Cube",
+          "description": "Essbase database (cube) name. Required for Essbase module.",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 3,
+          "options": {
+            "tags": true,
+            "async": {
+              "label": "Load Databases",
+              "action": "listDatabases"
+            },
+            "dependencies": {
+              "source.module": "essbase"
+            }
+          }
+        },
+        "query_mode": {
+          "type": "string",
+          "title": "Query Mode",
+          "description": "Custom: write MDX manually. Builder: select dimensions and members visually — the component generates the MDX query automatically.",
+          "enum": ["custom", "builder"],
+          "default": "custom",
+          "propertyOrder": 4,
+          "options": {
+            "dependencies": {
+              "source.module": "essbase"
+            }
+          }
+        },
+        "mdx_query": {
+          "type": "string",
+          "title": "MDX Query",
+          "description": "MDX SELECT statement for data extraction. Use {{since}} and {{until}} placeholders to insert the resolved start/end dates from the Incremental Loading settings below (e.g. WHERE [Time].CurrentMember IS [Time].[{{since}}]).",
+          "format": "textarea",
+          "propertyOrder": 5,
+          "options": {
+            "dependencies": {
+              "source.module": "essbase",
+              "source.query_mode": "custom"
+            }
+          }
+        },
+        "plan_type": {
+          "type": "string",
+          "title": "Plan Type",
+          "description": "Plan type name for data export. Required for Planning module.",
+          "propertyOrder": 6,
+          "options": {
+            "dependencies": {
+              "source.module": "planning"
+            }
+          }
+        },
+        "column_dimension": {
+          "type": "string",
+          "title": "Column Dimension",
+          "description": "The Essbase dimension whose members will appear as columns in the generated MDX query.",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 7,
+          "options": {
+            "tags": true,
+            "async": {
+              "label": "Load Dimensions",
+              "action": "loadTables"
+            },
+            "dependencies": {
+              "source.module": "essbase",
+              "source.query_mode": "builder"
+            }
+          }
+        },
+        "column_members": {
+          "type": "array",
+          "title": "Column Members",
+          "description": "Specific members from the Column Dimension to include on the COLUMNS axis. Leave empty to use all members (.Members).",
+          "format": "select",
+          "items": {
+            "type": "string",
+            "enum": []
+          },
+          "uniqueItems": true,
+          "propertyOrder": 8,
+          "options": {
+            "tags": true,
+            "async": {
+              "label": "Load Members",
+              "action": "loadFields"
+            },
+            "dependencies": {
+              "source.module": "essbase",
+              "source.query_mode": "builder"
+            }
+          }
+        },
+        "row_dimensions": {
+          "type": "array",
+          "title": "Row Dimensions",
+          "description": "Essbase dimensions to place on the ROWS axis. Multiple selections are combined with CrossJoin. Order matters.",
+          "format": "select",
+          "items": {
+            "type": "string",
+            "enum": []
+          },
+          "uniqueItems": true,
+          "propertyOrder": 9,
+          "options": {
+            "tags": true,
+            "async": {
+              "label": "Load Dimensions",
+              "action": "loadTables"
+            },
+            "dependencies": {
+              "source.module": "essbase",
+              "source.query_mode": "builder"
+            }
+          }
         }
       }
     },
-    "mdx_query": {
-      "type": "string",
-      "title": "MDX Query",
-      "description": "MDX SELECT statement for data extraction. Required for Essbase; optional for Planning.",
-      "format": "textarea",
-      "propertyOrder": 4
-    },
-    "plan_type": {
-      "type": "string",
-      "title": "Plan Type",
-      "description": "Plan type name for data export. Required for Planning module.",
-      "propertyOrder": 5,
-      "options": {
-        "dependencies": {
-          "module": "planning"
+    "destination": {
+      "type": "object",
+      "title": "Destination",
+      "format": "collapse",
+      "required": ["output_table"],
+      "propertyOrder": 2,
+      "properties": {
+        "output_table": {
+          "type": "string",
+          "title": "Output Table Name",
+          "description": "Name of the output table in Keboola Storage (without .csv extension)",
+          "propertyOrder": 1
+        },
+        "incremental": {
+          "type": "boolean",
+          "title": "Incremental Loading",
+          "description": "When enabled, the component saves the end date of each run and uses it as the start date of the next run. Use {{since}} and {{until}} in your MDX query to inject the resolved dates.",
+          "default": false,
+          "propertyOrder": 2,
+          "options": {
+            "dependencies": {
+              "source.module": "essbase"
+            }
+          }
+        },
+        "since": {
+          "type": "string",
+          "title": "Since (Start Date)",
+          "description": "Start of the extraction window. Accepts relative values (e.g. 'yesterday', '3 days ago', 'last month') or absolute dates (YYYY-MM-DD). Use {{since}} in your MDX query to insert this value. When Incremental Loading is enabled and this field is empty, the end date of the previous run is used automatically.",
+          "propertyOrder": 3,
+          "options": {
+            "dependencies": {
+              "source.module": "essbase"
+            }
+          }
+        },
+        "until": {
+          "type": "string",
+          "title": "Until (End Date)",
+          "description": "End of the extraction window. Accepts relative values (e.g. 'today', 'yesterday') or absolute dates (YYYY-MM-DD). Use {{until}} in your MDX query. Leave empty to use the current timestamp.",
+          "propertyOrder": 4,
+          "options": {
+            "dependencies": {
+              "source.module": "essbase"
+            }
+          }
         }
       }
-    },
-    "output_table": {
-      "type": "string",
-      "title": "Output Table Name",
-      "description": "Name of the output table in Keboola Storage (without .csv extension)",
-      "propertyOrder": 6
     }
   }
 }

@@ -1,0 +1,38 @@
+{
+  "files": {},
+  "hash_algorithm": "sha256",
+  "tables": {
+    "essbase_builder_basic.csv": {
+      "columns": [
+        "Product",
+        "Year",
+        "Qtr1",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Qtr2",
+        "Apr",
+        "May",
+        "Jun",
+        "Qtr3",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Qtr4",
+        "Oct",
+        "Nov",
+        "Dec"
+      ],
+      "hash": "sha256:29618c3c8b9b05b206a4a4b3b73d1b4d1d1ccb98d8b56f547cce4de64ccbfe16",
+      "row_count": 23,
+      "size_bytes": 2707
+    },
+    "essbase_builder_basic.csv.manifest": {
+      "columns": null,
+      "hash": "sha256:6d4fcc3483210cc4a02687fbe418f169b5d63e4c26298e101c59301877804a94",
+      "row_count": null,
+      "size_bytes": 2768
+    }
+  },
+  "version": "1.0"
+}
