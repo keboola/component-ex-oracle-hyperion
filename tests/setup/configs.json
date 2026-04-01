@@ -37,6 +37,25 @@
     }
   },
   {
+    "name": "02_listDatabases_no_app",
+    "description": "listDatabases without application — should fail with UserException (no application selected)",
+    "config": {
+      "action": "listDatabases",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase"
+        }
+      }
+    }
+  },
+  {
     "name": "03_listDatabases_with_app",
     "description": "listDatabases for Sample application — returns Basic cube",
     "config": {
@@ -265,6 +284,22 @@
         "destination": {
           "output_table": "essbase_builder_columns"
         }
+      }
+    }
+  },
+  {
+    "name": "14_testConnection",
+    "description": "testConnection sync action — verifies Essbase connectivity and returns version",
+    "config": {
+      "action": "testConnection",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false
       }
     }
   },
