@@ -16,6 +16,27 @@
     }
   },
   {
+    "name": "13_loadTables",
+    "description": "loadTables for Sample.Basic — returns list of cube dimensions",
+    "config": {
+      "action": "loadTables",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic"
+        }
+      }
+    }
+  },
+  {
     "name": "03_listDatabases_with_app",
     "description": "listDatabases for Sample application — returns Basic cube",
     "config": {
