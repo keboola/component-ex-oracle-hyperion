@@ -1,0 +1,36 @@
+{
+  "exit_code": null,
+  "stderr": "",
+  "logs": [
+    {
+      "level": "INFO",
+      "logger": "root",
+      "message": "Processing: module=essbase, app=Sample",
+      "timestamp": "2026-04-01T12:17:24.000Z"
+    },
+    {
+      "level": "INFO",
+      "logger": "root",
+      "message": "Connecting to Essbase at 34.31.58.133:9010",
+      "timestamp": "2026-04-01T12:17:24.000Z"
+    },
+    {
+      "level": "INFO",
+      "logger": "root",
+      "message": "Connected to Essbase version: 21.3.0.0.0",
+      "timestamp": "2026-04-01T12:17:24.000Z"
+    },
+    {
+      "level": "INFO",
+      "logger": "root",
+      "message": "Executing MDX on Sample/Basic -> essbase_cola",
+      "timestamp": "2026-04-01T12:17:24.000Z"
+    },
+    {
+      "level": "INFO",
+      "logger": "root",
+      "message": "Written 1 rows to 'essbase_cola'.",
+      "timestamp": "2026-04-01T12:17:24.000Z"
+    }
+  ]
+}
