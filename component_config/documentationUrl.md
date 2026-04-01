@@ -1,1 +1,1 @@
-/blob/master/README.md
+https://github.com/keboola/component-ex-oracle-hyperion/blob/main/README.md

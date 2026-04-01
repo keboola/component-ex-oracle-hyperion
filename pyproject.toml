@@ -1,15 +1,13 @@
 [project]
-name = "python-component"
+name = "keboola-ex-oracle-hyperion"
 dynamic = ["version"]
 readme = "README.md"
-requires-python = "~=3.13"
+requires-python = "~=3.13.0"
 dependencies = [
-    "freezegun>=1.5.1",
     "keboola-component>=1.9.0",
-    "keboola-http-client>=1.0.1",
     "keboola-utils>=1.1.0",
-    "mock>=5.2.0",
     "pydantic>=2.11.7",
+    "requests>=2.32.0",
 ]
 
 [dependency-groups]
@@ -24,4 +22,7 @@ line-length = 120
 target-version = "py313"
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = ["I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

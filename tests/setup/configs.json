@@ -1,0 +1,299 @@
+[
+  {
+    "name": "01_listApplications",
+    "description": "List all Essbase applications via sync action",
+    "config": {
+      "action": "listApplications",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false
+      }
+    }
+  },
+  {
+    "name": "13_loadTables",
+    "description": "loadTables for Sample.Basic — returns list of cube dimensions",
+    "config": {
+      "action": "loadTables",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic"
+        }
+      }
+    }
+  },
+  {
+    "name": "03_listDatabases_with_app",
+    "description": "listDatabases for Sample application — returns Basic cube",
+    "config": {
+      "action": "listDatabases",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample"
+        }
+      }
+    }
+  },
+  {
+    "name": "04_run_essbase_mdx_basic",
+    "description": "Extract Q1 data from Sample.Basic via MDX",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola],[Root Beer]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_sample_basic"
+        }
+      }
+    }
+  },
+  {
+    "name": "05_run_essbase_mdx_cola",
+    "description": "Extract Cola data from Sample.Basic via MDX",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_cola"
+        }
+      }
+    }
+  },
+  {
+    "name": "06_run_essbase_mdx_root_beer",
+    "description": "Extract Root Beer data from Sample.Basic via MDX",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Root Beer]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_root_beer"
+        }
+      }
+    }
+  },
+  {
+    "name": "07_run_essbase_incremental_with_state",
+    "description": "Incremental custom query: no since/until in config — reads last_run=2024-01-01 from in/state.json, resolves dates via parse_datetime_interval, runs MDX, writes updated state",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[100-10]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_incremental",
+          "incremental": true
+        }
+      }
+    }
+  },
+  {
+    "name": "08_run_essbase_explicit_dates_substitution",
+    "description": "Date substitution: explicit since=2024-01-01 / until=2024-03-31 — {{since}} and {{until}} placeholders in MDX comment are replaced before the query is sent to the server",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_explicit_dates",
+          "since": "2024-01-01",
+          "until": "2024-03-31",
+          "incremental": true
+        }
+      }
+    }
+  },
+  {
+    "name": "09_run_essbase_relative_dates_substitution",
+    "description": "Date substitution: relative since='5 days ago' / until='now' — verifies keboola.utils.date relative-date parsing and {{since}}/{{until}} substitution in MDX comment",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "mdx_query": "/* range: {{since}} to {{until}} */ SELECT {[Jan],[Feb],[Mar]} ON COLUMNS, {[Cola]} ON ROWS FROM [Sample.Basic]"
+        },
+        "destination": {
+          "output_table": "essbase_relative_dates",
+          "since": "5 days ago",
+          "until": "now",
+          "incremental": true
+        }
+      }
+    }
+  },
+  {
+    "name": "10_run_essbase_builder_basic",
+    "description": "Builder mode basic: column_dimension=Year with no column_members (generates {[Year].Members} ON COLUMNS), row_dimensions=[Product] — full Year axis returned",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "query_mode": "builder",
+          "column_dimension": "Year",
+          "row_dimensions": ["Product"]
+        },
+        "destination": {
+          "output_table": "essbase_builder_basic"
+        }
+      }
+    }
+  },
+  {
+    "name": "11_run_essbase_builder_column_members",
+    "description": "Builder mode with specific column_members: column_dimension=Year, column_members=[Jan,Feb,Mar] generates explicit member set ON COLUMNS; row_dimensions=[Product]",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "query_mode": "builder",
+          "column_dimension": "Year",
+          "column_members": ["Jan", "Feb", "Mar"],
+          "row_dimensions": ["Product"]
+        },
+        "destination": {
+          "output_table": "essbase_builder_columns"
+        }
+      }
+    }
+  },
+  {
+    "name": "12_run_essbase_builder_multi_rows",
+    "description": "Builder mode with multiple row dimensions: row_dimensions=[Product, Market] — component generates CrossJoin({[Product].Members},{[Market].Members}) ON ROWS",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "hyperion_url": "http://34.31.58.133:9000",
+        "username": "admin",
+        "#password": "DUMMY_PASSWORD",
+        "essbase_host": "34.31.58.133",
+        "essbase_port": 9010,
+        "ssl_verify": false,
+        "use_ssl": false,
+        "source": {
+          "module": "essbase",
+          "application": "Sample",
+          "database": "Basic",
+          "query_mode": "builder",
+          "column_dimension": "Year",
+          "column_members": ["Jan", "Feb", "Mar"],
+          "row_dimensions": ["Product", "Market"]
+        },
+        "destination": {
+          "output_table": "essbase_builder_multi_rows"
+        }
+      }
+    }
+  }
+]
