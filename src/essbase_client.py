@@ -146,12 +146,12 @@ def mdx_response_to_rows(response: dict) -> tuple[list[str], list[dict], list[st
         return [], [], []
 
     row_dims = metadata.get("row", ["row"])
-    col_members = data[0][1:]  # first row, skip leading empty cell
+    n_row_dims = len(row_dims)
+    col_members = data[0][n_row_dims:]  # first row, skip one leading empty cell per row dimension
 
     # Build column names: row dimension name(s) + column member names
     columns = row_dims + [str(c) for c in col_members]
 
-    n_row_dims = len(row_dims)
     rows = []
     for raw_row in data[1:]:
         if not raw_row:

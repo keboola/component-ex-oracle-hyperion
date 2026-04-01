@@ -6,20 +6,19 @@
       "columns": [
         "Product",
         "Market",
-        "",
         "Jan",
         "Feb",
         "Mar"
       ],
-      "hash": "sha256:7cd5e32fcd7142ea04bf246e7c62f1b4f10fcdfff68beca2d9db0ff610c3e3b4",
+      "hash": "sha256:0ed22a710fd56cff5d8e1bb5ea2b2e85d7fa60695e75f952aac3133c06a91251",
       "row_count": 551,
-      "size_bytes": 19512
+      "size_bytes": 18961
     },
     "essbase_builder_multi_rows.csv.manifest": {
       "columns": null,
-      "hash": "sha256:6b22d7683c220a769bc4b67c87fb58bbfc58000955a3f85590ed7f35388b0998",
+      "hash": "sha256:93c441592457284064fdcf8b10c3d966e96c873042d83dc8502e9f5b7435f783",
       "row_count": null,
-      "size_bytes": 1054
+      "size_bytes": 933
     }
   },
   "version": "1.0"
