@@ -2,7 +2,7 @@ from enum import StrEnum
 from urllib.parse import urlparse
 
 from keboola.component.exceptions import UserException
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, model_validator
 
 
 class Module(StrEnum):
@@ -56,6 +56,13 @@ class Configuration(BaseModel):
     destination: DestinationConfig = Field(default_factory=DestinationConfig)
 
     model_config = {"populate_by_name": True, "extra": "ignore"}
+
+    @model_validator(mode="before")
+    @classmethod
+    def _flatten_connection(cls, data: dict) -> dict:
+        if isinstance(data, dict) and "connection" in data:
+            data = {**data, **data.pop("connection")}
+        return data
 
     def __init__(self, **data):
         try:

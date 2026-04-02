@@ -8,6 +8,7 @@ Phase 1 MVP:
 
 import csv
 import logging
+import re
 from datetime import UTC, datetime
 
 from keboola.component.base import ComponentBase, sync_action
@@ -15,6 +16,7 @@ from keboola.component.dao import BaseType, ColumnDefinition, SupportedDataTypes
 from keboola.component.exceptions import UserException
 from keboola.component.sync_actions import SelectElement
 from keboola.utils.date import get_past_date, parse_datetime_interval
+from keboola.utils.header_normalizer import DefaultHeaderNormalizer
 
 from configuration import Configuration, Module, QueryMode
 from essbase_client import EssbaseClient, mdx_response_to_rows
@@ -242,6 +244,56 @@ class Component(ComponentBase):
         self._write_table(dest.output_table, columns, data_rows)
         logging.info(f"Written {len(data_rows)} rows to '{dest.output_table}'.")
 
+    _header_normalizer = DefaultHeaderNormalizer(forbidden_sub="_")
+
+    @staticmethod
+    def _webalize_columns(
+        columns: list[str], rows: list[dict], primary_key: list[str]
+    ) -> tuple[list[str], list[dict], list[str]]:
+        """Normalize column names to match Keboola Storage rules and resolve any duplicates.
+
+        Uses keboola.utils DefaultHeaderNormalizer (replaces forbidden chars with '_'), then
+        strips leading/trailing underscores and collapses runs — matching platform webalization.
+        e.g. 'Profit %' and 'Margin %' both normalize to 'Profit' / 'Margin', colliding with
+        plain members of the same name; duplicates are disambiguated with a _1, _2 … suffix.
+        """
+        normalizer = Component._header_normalizer
+        normalized = normalizer.normalize_header(columns)
+        # Strip leading/trailing underscores; collapse consecutive underscores into one.
+        normalized = [re.sub(r"_+", "_", n).strip("_") or "empty" for n in normalized]
+
+        # Resolve duplicates: second occurrence of "Profit" becomes "Profit_1", etc.
+        # Track all names upfront to prevent suffix collisions (e.g. "A_1" suffix hitting an
+        # existing "A_1" column).
+        seen: dict[str, int] = {}
+        final: list[str] = []
+        occupied: set[str] = set(normalized)
+        for name in normalized:
+            if name not in seen:
+                seen[name] = 0
+                final.append(name)
+            else:
+                seen[name] += 1
+                candidate = f"{name}_{seen[name]}"
+                while candidate in occupied:
+                    seen[name] += 1
+                    candidate = f"{name}_{seen[name]}"
+                occupied.add(candidate)
+                final.append(candidate)
+
+        # Rename keys in row dicts and primary_key list where the name changed
+        rename = {old: new for old, new in zip(columns, final) if old != new}
+        if rename:
+            rows = [{rename.get(k, k): v for k, v in row.items()} for row in rows]
+            primary_key = [rename.get(k, k) for k in primary_key]
+            logging.info(
+                "Normalized %d column name(s) to satisfy Storage API: %s",
+                len(rename),
+                rename,
+            )
+
+        return final, rows, primary_key
+
     def _write_table(
         self,
         table_name: str,
@@ -250,12 +302,13 @@ class Component(ComponentBase):
         incremental: bool = False,
         primary_key: list[str] | None = None,
     ) -> None:
-        schema = self._build_schema(columns, primary_key or [], rows)
+        columns, rows, primary_key = self._webalize_columns(columns, rows, primary_key or [])
+        schema = self._build_schema(columns, primary_key, rows)
         table = self.create_out_table_definition(
             f"{table_name}.csv",
             incremental=incremental,
             schema=schema,
-            primary_key=primary_key or [],
+            primary_key=primary_key,
             has_header=True,
         )
         with open(table.full_path, "w", newline="", encoding="utf-8") as f:
