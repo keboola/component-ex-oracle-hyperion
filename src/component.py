@@ -8,6 +8,7 @@ Phase 1 MVP:
 
 import csv
 import logging
+import re
 from datetime import UTC, datetime
 
 from keboola.component.base import ComponentBase, sync_action
@@ -258,21 +259,27 @@ class Component(ComponentBase):
         """
         normalizer = Component._header_normalizer
         normalized = normalizer.normalize_header(columns)
-        # Strip leading/trailing underscores and collapse runs (platform behaviour)
-        import re
-
+        # Strip leading/trailing underscores; collapse consecutive underscores into one.
         normalized = [re.sub(r"_+", "_", n).strip("_") or "empty" for n in normalized]
 
         # Resolve duplicates: second occurrence of "Profit" becomes "Profit_1", etc.
+        # Track all names upfront to prevent suffix collisions (e.g. "A_1" suffix hitting an
+        # existing "A_1" column).
         seen: dict[str, int] = {}
         final: list[str] = []
+        occupied: set[str] = set(normalized)
         for name in normalized:
             if name not in seen:
                 seen[name] = 0
                 final.append(name)
             else:
                 seen[name] += 1
-                final.append(f"{name}_{seen[name]}")
+                candidate = f"{name}_{seen[name]}"
+                while candidate in occupied:
+                    seen[name] += 1
+                    candidate = f"{name}_{seen[name]}"
+                occupied.add(candidate)
+                final.append(candidate)
 
         # Rename keys in row dicts and primary_key list where the name changed
         rename = {old: new for old, new in zip(columns, final) if old != new}
