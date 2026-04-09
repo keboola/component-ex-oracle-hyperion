@@ -10,7 +10,7 @@ concurrency: ci-${{ github.ref }}
 
 jobs:
   ci:
-    uses: keboola/component-ci/.github/workflows/component-pipeline.yml@master
+    uses: keboola/component-ci/.github/workflows/component-pipeline.yml@feature/source-image-input
     with:
       app_id: "keboola.ex-oracle-hyperion"
       vendor: "keboola"
